@@ -1,5 +1,9 @@
 # [SparkleShare](https://www.sparkleshare.org/)
 
+edit: ‼️ Please read [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
+
+<br>
+
 [SparkleShare](https://www.sparkleshare.org/) is a file sharing and collaboration app. It works just like Dropbox, and you can run it on your own server. It's available for Linux distributions, macOS, and Windows.
 
 ![Banner](https://raw.githubusercontent.com/hbons/SparkleShare/master/SparkleShare/Common/Images/readme-banner.png)
