@@ -1,6 +1,7 @@
 # [SparkleShare](https://www.sparkleshare.org/)
 
-edit: ‼️ Please read [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
+> [!WARNING]
+> Please read [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
 
 <br>
 
