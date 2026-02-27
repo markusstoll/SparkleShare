@@ -3,6 +3,9 @@
 > [!WARNING]
 > Please read [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
 
+> [!IMPORTANT]
+> Hello! Hylke here. I was recently <a href="https://www.theguardian.com/technology/2025/may/13/microsoft-layoffs" target="_blank">laid off</a>. I'd love to work full-time creating **apps for Linux** and contributing **design for FOSS projects**. I hope to gather enough [monthly sponsors](https://github.com/sponsors/hbons) for a minimum wage. Every little helps. Thank you.
+
 <br>
 
 [SparkleShare](https://www.sparkleshare.org/) is a file sharing and collaboration app. It works just like Dropbox, and you can run it on your own server. It's available for Linux distributions, macOS, and Windows.
