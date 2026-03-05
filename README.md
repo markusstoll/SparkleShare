@@ -1,7 +1,7 @@
 # [SparkleShare](https://www.sparkleshare.org/)
 
-> [!WARNING]
-> Please read [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
+> [!NOTE]
+> Please read 🌱 [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
 
 > [!IMPORTANT]
 > Hello! Hylke here. I was recently <a href="https://www.theguardian.com/technology/2025/may/13/microsoft-layoffs" target="_blank">laid off</a>. I'd love to work full-time creating **apps for Linux** and contributing **design for FOSS projects**. I hope to gather enough [monthly sponsors](https://github.com/sponsors/hbons) for a minimum wage. Every little helps. Thank you.
