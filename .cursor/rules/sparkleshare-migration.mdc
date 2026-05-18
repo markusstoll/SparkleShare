@@ -1,0 +1,16 @@
+---
+description: SparkleShare .NET 8 migration conventions
+globs:
+  - Sparkles/**
+  - SparkleShare.Core.sln
+  - Directory.Build.props
+---
+
+# SparkleShare migration (Phase 0+)
+
+- Target framework for shared libraries: `net8.0` (`SparkleShare.Core.sln`).
+- Platform UI code stays in `SparkleShare/Mac`, `Windows`, `Linux` until migrated per phase.
+- Do not reference AppKit, GTK, or WPF from `Sparkles` or `Sparkles.Git`.
+- Preserve extension-method hash behavior in `Extensions.cs` (tests depend on exact outputs).
+- Use English for code, comments, and commit messages.
+- Legacy `SparkleShare.sln` remains for unmigrated platform projects.

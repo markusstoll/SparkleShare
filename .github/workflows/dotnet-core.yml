@@ -1,0 +1,38 @@
+name: .NET Core (Sparkles)
+
+on:
+  push:
+    branches: [ main, master, migrate/** ]
+    paths:
+      - 'Sparkles/**'
+      - 'SparkleShare.Core.sln'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - '.github/workflows/dotnet-core.yml'
+  pull_request:
+    paths:
+      - 'Sparkles/**'
+      - 'SparkleShare.Core.sln'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - '.github/workflows/dotnet-core.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore SparkleShare.Core.sln
+
+      - name: Build
+        run: dotnet build SparkleShare.Core.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test SparkleShare.Core.sln --configuration Release --no-build --verbosity normal
