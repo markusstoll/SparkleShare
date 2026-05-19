@@ -1,4 +1,4 @@
-﻿﻿﻿//   SparkleShare, a collaboration and sharing tool.
+﻿//   SparkleShare, a collaboration and sharing tool.
 //   Copyright (C) 2010  Hylke Bons <hi@planetpeanut.uk>
 //
 //   This program is free software: you can redistribute it and/or modify
@@ -402,8 +402,9 @@ namespace SparkleShare {
 
                 // Displaying marked up text with Cocoa is
                 // a pain, so we just use a webview instead
-                WebView web_view = new WebView ();
-                web_view.Frame   = new CGRect (190, Frame.Height - 525, 375, 400);
+                var web_view = new WKWebView (
+                    new CGRect (190, Frame.Height - 525, 375, 400),
+                    new WKWebViewConfiguration ());
 
                 string html = "<style>" +
                     "* {" +
@@ -440,8 +441,9 @@ namespace SparkleShare {
                     html = html.Replace ("</ul>", "<li>Here’s the raw error message: " + warnings_markup + "</li></ul>");
                 }
 
-                web_view.MainFrame.LoadHtmlString (html, new NSUrl (""));
-                web_view.DrawsBackground = false;
+                web_view.LoadHtmlString ((NSString) html, new NSUrl (""));
+                // WKWebView has no DrawsBackground property; using the documented KVC workaround.
+                web_view.SetValueForKey (NSNumber.FromBoolean (false), (NSString) "drawsBackground");
 
                 CancelButton = new NSButton () { Title = "Cancel" };
                 TryAgainButton = new NSButton () { Title = "Retry" };

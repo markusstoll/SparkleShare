@@ -30,7 +30,7 @@ namespace SparkleShare {
         public EventLogController Controller = new EventLogController (false);
         public float TitlebarHeight;
 
-        WebView web_view;
+        WKWebView web_view;
         NSBox background;
         NSBox cover;
         NSPopUpButton popup_button;
@@ -72,12 +72,10 @@ namespace SparkleShare {
             Level          = NSWindowLevel.Floating;
 
 
-            this.web_view = new WebView (new CGRect (0, 0, 481, 579), "", "") {
-                Frame = new CGRect (new CGPoint (0, 0),
-                    new CGSize (ContentView.Frame.Width, ContentView.Frame.Height - 39))
-            };
-
-            this.web_view.Preferences.PlugInsEnabled = false;
+            this.web_view = new WKWebView (
+                new CGRect (new CGPoint (0, 0),
+                    new CGSize (ContentView.Frame.Width, ContentView.Frame.Height - 39)),
+                new WKWebViewConfiguration ());
 
             this.cover = new NSBox () {
                 Frame = new CGRect (
@@ -256,19 +254,20 @@ namespace SparkleShare {
             html = html.Replace ("<!-- $document-edited-background-image -->", pixmaps_path + "/document-edited.png");
             html = html.Replace ("<!-- $document-moved-background-image -->", pixmaps_path + "/document-moved.png");
 
-            this.web_view = new WebView (new CGRect (0, 0, 481, 579), "", "") {
-                Frame = new CGRect (new CGPoint (0, 0), new CGSize (ContentView.Frame.Width, ContentView.Frame.Height - 39))
-            };
+            this.web_view = new WKWebView (
+                new CGRect (new CGPoint (0, 0),
+                    new CGSize (ContentView.Frame.Width, ContentView.Frame.Height - 39)),
+                new WKWebViewConfiguration ());
 
             this.web_view.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
-            this.web_view.Preferences.PlugInsEnabled = false;
 
-            this.web_view.MainFrame.LoadHtmlString (html, new NSUrl (""));
+            var navigation_delegate = new SparkleWebNavigationDelegate ();
+            navigation_delegate.LinkClicked += Controller.LinkClicked;
+            this.web_view.NavigationDelegate = navigation_delegate;
 
-            this.web_view.PolicyDelegate = new SparkleWebPolicyDelegate ();
+            this.web_view.LoadHtmlString ((NSString) html, new NSUrl (""));
+
             ContentView.AddSubview (this.web_view);
-
-            (this.web_view.PolicyDelegate as SparkleWebPolicyDelegate).LinkClicked += Controller.LinkClicked;
 
             this.progress_indicator.Hidden = true;
         }
@@ -392,15 +391,22 @@ namespace SparkleShare {
     }
     
     
-    class SparkleWebPolicyDelegate : WebPolicyDelegate {
+    class SparkleWebNavigationDelegate : WKNavigationDelegate {
 
         public event LinkClickedHandler LinkClicked = delegate { };
         public delegate void LinkClickedHandler (string href);
 
-        public override void DecidePolicyForNavigation (WebView web_view, NSDictionary action_info,
-            NSUrlRequest request, WebFrame frame, NSObject decision_token)
+        public override void DecidePolicy (WKWebView web_view, WKNavigationAction navigation_action,
+            Action<WKNavigationActionPolicy> decision_handler)
         {
-            LinkClicked (request.Url.ToString ());
+            // Allow the initial in-memory HTML load; intercept everything else as an external link click.
+            if (navigation_action.NavigationType == WKNavigationType.LinkActivated) {
+                LinkClicked (navigation_action.Request.Url.ToString ());
+                decision_handler (WKNavigationActionPolicy.Cancel);
+                return;
+            }
+
+            decision_handler (WKNavigationActionPolicy.Allow);
         }
     }
 }
