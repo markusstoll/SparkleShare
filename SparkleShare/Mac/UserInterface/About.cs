@@ -20,6 +20,7 @@ using System;
 using AppKit;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 
 namespace SparkleShare {
 
@@ -34,7 +35,7 @@ namespace SparkleShare {
         private NSButton hidden_close_button;
 
 
-        public About (IntPtr handle) : base (handle) { }
+        public About (NativeHandle handle) : base (handle) { }
 
         public About () : base ()
         {
@@ -48,7 +49,6 @@ namespace SparkleShare {
             MinSize     = new CGSize (640, 281);
             HasShadow   = true;
             IsOpaque    = false;
-            BackingType = NSBackingStore.Buffered;
             Level       = NSWindowLevel.Floating;
 
             this.hidden_close_button = new NSButton () {

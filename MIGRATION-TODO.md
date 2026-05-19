@@ -56,13 +56,13 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 - [x] Debug launch reaches app initialization using system `git` fallback when bundled git is absent
 - [x] Replace deprecated `WebView` with `WKWebView`
 - [x] Reduce obsolete .NET/AppKit warnings where APIs have direct modern replacements
+- [x] Address remaining AppKit deprecations (`NSWindow`, `NSBox`, `NSSavePanel`, `NSAttributedString`) — build is now warning-free
 
 ### Still open (Phase 1)
 
 - [ ] Manual QA (tray, setup, sync, wake-from-sleep)
 - [ ] Bundle git + LFS in app resources (`postBuild.sh` / packaging)
 - [ ] Improve cold-start responsiveness: batch repository initialization and throttle status item/menu updates
-- [ ] Address remaining AppKit deprecation warnings (`NSWindow`, `NSBox`, `NSSavePanel`, `NSAttributedString`)
 - [ ] Login item: replace AppleScript with `SMAppService` where appropriate
 - [ ] Codesign + notarization pipeline
 - [ ] Add `SparkleShare.Mac` to solution / CI

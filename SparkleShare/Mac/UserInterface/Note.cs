@@ -20,6 +20,7 @@ using System;
 using AppKit;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 
 namespace SparkleShare {
 
@@ -34,7 +35,7 @@ namespace SparkleShare {
         private NSTextField user_name_text_field, user_email_text_field, balloon_text_field;
 
 
-        public Note (IntPtr handle) : base (handle) { }
+        public Note (NativeHandle handle) : base (handle) { }
 
         public Note () : base ()
         {
@@ -48,7 +49,6 @@ namespace SparkleShare {
             MinSize     = new CGSize (480, 240);
             HasShadow   = true;
             IsOpaque    = false;
-            BackingType = NSBackingStore.Buffered;
             Level       = NSWindowLevel.Floating;
 
             this.hidden_close_button = new NSButton () {

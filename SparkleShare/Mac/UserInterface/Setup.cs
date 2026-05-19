@@ -695,16 +695,12 @@ namespace SparkleShare {
                 NSData name_data = NSData.FromString (
                     "<font face='-apple-system, sans-serif' style='line-height: 140%'><b>" + preset.Name + "</b></font>");
 
-                NSDictionary name_dictionary       = new NSDictionary();
-                NSAttributedString name_attributes = new NSAttributedString (
-                    name_data, new NSUrl ("file://"), out name_dictionary);
+                NSAttributedString name_attributes = NSAttributedString.CreateWithHTML (name_data, out _);
 
                 NSData description_data = NSData.FromString (
                     "<small><font style='line-height: 150%' color='#aaa' face='-apple-system, sans-serif'>" + preset.Description + "</font></small>");
 
-                NSDictionary description_dictionary       = new NSDictionary();
-                NSAttributedString description_attributes = new NSAttributedString (
-                    description_data, new NSUrl ("file://"), out description_dictionary);
+                NSAttributedString description_attributes = NSAttributedString.CreateWithHTML (description_data, out _);
 
                 NSMutableAttributedString mutable_attributes = new NSMutableAttributedString (name_attributes);
                 mutable_attributes.Append (new NSAttributedString ("\n"));
@@ -718,16 +714,14 @@ namespace SparkleShare {
                 NSData selected_name_data = NSData.FromString (
                     "<font color='white' face='-apple-system, sans-serif' style='line-height: 140%'><b>" + preset.Name + "</b></font>");
 
-                NSDictionary selected_name_dictionary = new NSDictionary ();
-                NSAttributedString selected_name_attributes = new NSAttributedString (
-                    selected_name_data, new NSUrl ("file://"), out selected_name_dictionary);
+                NSAttributedString selected_name_attributes = NSAttributedString.CreateWithHTML (
+                    selected_name_data, out _);
 
                 NSData selected_description_data = NSData.FromString (
                     "<small><font style='line-height: 150%' color='#9bbaeb' face='-apple-system, sans-serif'>" + preset.Description + "</font></small>");
 
-                NSDictionary selected_description_dictionary       = new NSDictionary ();
-                NSAttributedString selected_description_attributes = new NSAttributedString (
-                    selected_description_data, new NSUrl ("file://"), out selected_description_dictionary);
+                NSAttributedString selected_description_attributes = NSAttributedString.CreateWithHTML (
+                    selected_description_data, out _);
 
                 NSMutableAttributedString selected_mutable_attributes =
                     new NSMutableAttributedString (selected_name_attributes);

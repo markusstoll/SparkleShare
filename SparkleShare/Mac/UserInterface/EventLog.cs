@@ -21,6 +21,7 @@ using System.IO;
 using AppKit;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using WebKit;
 
 namespace SparkleShare {
@@ -39,7 +40,7 @@ namespace SparkleShare {
         NSButton hidden_close_button;
 
 
-        public EventLog (IntPtr handle) : base (handle)
+        public EventLog (NativeHandle handle) : base (handle)
         {
         }
 
@@ -67,7 +68,6 @@ namespace SparkleShare {
             MinSize        = new CGSize (min_width, min_height);
             HasShadow      = true;
             IsOpaque       = false;
-            BackingType    = NSBackingStore.Buffered;
             TitlebarHeight = (float) (Frame.Height - ContentView.Frame.Height);
             Level          = NSWindowLevel.Floating;
 
@@ -82,8 +82,8 @@ namespace SparkleShare {
                     new CGPoint (-1, -1),
                     new CGSize (Frame.Width + 2, this.web_view.Frame.Height + 1)),
                 FillColor = NSColor.White,
-                BorderType = NSBorderType.NoBorder,
                 BoxType = NSBoxType.NSBoxCustom,
+                BorderWidth = 0,
                 AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable
             };
 
@@ -336,13 +336,12 @@ namespace SparkleShare {
         void ShowSaveDialogEventDelegate (string file_name, string target_folder_path)
         {
             SparkleShare.Controller.Invoke(() => {
-                NSSavePanel panel = new NSSavePanel () {
-                    DirectoryUrl = new NSUrl (target_folder_path, isDir: true),
-                    NameFieldStringValue = file_name,
-                    ParentWindow = this,
-                    Title = "Restore from History",
-                    PreventsApplicationTerminationWhenModal = false
-                };
+                // Use the out-of-process save panel factory required since macOS 10.15.
+                NSSavePanel panel = NSSavePanel.SavePanel;
+                panel.DirectoryUrl = new NSUrl (target_folder_path, isDir: true);
+                panel.NameFieldStringValue = file_name;
+                panel.Title = "Restore from History";
+                panel.PreventsApplicationTerminationWhenModal = false;
 
                 // NSPanelButtonType was removed from modern AppKit bindings; OK == 1 (NSModalResponseStop).
                 if (panel.RunModal () == 1) {
