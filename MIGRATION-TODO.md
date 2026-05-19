@@ -53,10 +53,11 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 - [x] `Info.plist` minimum macOS 12.0 (SDK requirement)
 - [x] Build succeeds with `MD_APPLE_SDK_ROOT=/Applications/Xcode.app` (see `scripts/build-mac.sh`)
 - [x] Fix `NSPanelButtonType` → modal return value in `EventLog.cs`
+- [x] Debug launch reaches app initialization using system `git` fallback when bundled git is absent
 
 ### Still open (Phase 1)
 
-- [ ] Run app from bundle and manual QA (tray, setup, sync, wake-from-sleep)
+- [ ] Manual QA (tray, setup, sync, wake-from-sleep)
 - [ ] Bundle git + LFS in app resources (`postBuild.sh` / packaging)
 - [ ] Replace deprecated `WebView` with `WKWebView` (many CA1422 warnings)
 - [ ] Login item: replace AppleScript with `SMAppService` where appropriate

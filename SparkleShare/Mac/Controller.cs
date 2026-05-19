@@ -1,4 +1,4 @@
-﻿﻿﻿//   SparkleShare, a collaboration and sharing tool.
+﻿//   SparkleShare, a collaboration and sharing tool.
 //   Copyright (C) 2010  Hylke Bons <hi@planetpeanut.uk>
 //
 //   This program is free software: you can redistribute it and/or modify
@@ -42,15 +42,20 @@ namespace SparkleShare {
         {
             NSApplication.Init ();
 
-            GitCommand.GitPath  = Path.Combine (NSBundle.MainBundle.ResourcePath, "git", "libexec", "git-core", "git");
-            GitCommand.ExecPath = Path.Combine (NSBundle.MainBundle.ResourcePath, "git", "libexec", "git-core");
+            string bundled_git_path = Path.Combine (NSBundle.MainBundle.ResourcePath, "git", "libexec", "git-core", "git");
+            string bundled_exec_path = Path.Combine (NSBundle.MainBundle.ResourcePath, "git", "libexec", "git-core");
 
-            bool overwite = true;
+            if (File.Exists (bundled_git_path)) {
+                GitCommand.GitPath  = bundled_git_path;
+                GitCommand.ExecPath = bundled_exec_path;
 
-            File.Copy (
-                Path.Combine (GitCommand.ExecPath, "git-lfs"),
-                Path.Combine (Config.BinPath, "git-lfs"),
-                overwite);
+                string bundled_git_lfs_path = Path.Combine (bundled_exec_path, "git-lfs");
+                if (File.Exists (bundled_git_lfs_path))
+                    File.Copy (bundled_git_lfs_path, Path.Combine (Config.BinPath, "git-lfs"), overwrite: true);
+
+            } else {
+                Logger.LogInfo ("Controller", "Bundled git not found; falling back to git from PATH");
+            }
             
             NSWorkspace.Notifications.ObserveDidWake((object sender, NSNotificationEventArgs e) => {
                 Console.Write ("Detected wake from sleep, checking for updates\n");
