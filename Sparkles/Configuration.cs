@@ -26,10 +26,20 @@ namespace Sparkles {
     public class Configuration : XmlDocument {
 
         private static Lazy<Configuration> ConfigLazy = new Lazy<Configuration> (() => {
-            string app_data_path = Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData);
+            string app_data_path;
 
-            if (InstallationInfo.OperatingSystem != OS.Windows && InstallationInfo.OperatingSystem != OS.macOS)
-                app_data_path = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), ".config");
+            if (InstallationInfo.OperatingSystem == OS.Windows) {
+                app_data_path = Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData);
+            } else if (InstallationInfo.OperatingSystem == OS.macOS) {
+                // Pin to the legacy Xamarin.Mac location (~/.config) so existing installations keep
+                // working. Modern .NET on macOS resolves SpecialFolder.ApplicationData to
+                // ~/Library/Application Support, which would be a silent breaking change.
+                app_data_path = Path.Combine (
+                    Environment.GetFolderPath (Environment.SpecialFolder.UserProfile), ".config");
+            } else {
+                app_data_path = Path.Combine (
+                    Environment.GetFolderPath (Environment.SpecialFolder.Personal), ".config");
+            }
 
             string config_path = Path.Combine (app_data_path, "org.sparkleshare.SparkleShare");
 
@@ -50,7 +60,11 @@ namespace Sparkles {
 
         public string HomePath {
             get {
-                if (InstallationInfo.OperatingSystem == OS.Windows)
+                // On Windows and macOS the user home directory is the UserProfile. Modern .NET on
+                // macOS maps SpecialFolder.Personal to ~/Documents, which would relocate the default
+                // SparkleShare folder away from its historical location at ~/SparkleShare.
+                if (InstallationInfo.OperatingSystem == OS.Windows ||
+                    InstallationInfo.OperatingSystem == OS.macOS)
                     return Environment.GetFolderPath (Environment.SpecialFolder.UserProfile);
 
                 return Environment.GetFolderPath (Environment.SpecialFolder.Personal);
