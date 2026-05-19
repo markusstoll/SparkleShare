@@ -1,4 +1,4 @@
-# SparkleShare .NET 8 migration
+# SparkleShare .NET 10 migration
 
 Branch: `migrate/net8-phase0` (and follow-up branches per phase)
 
@@ -9,7 +9,7 @@ dotnet build SparkleShare.Core.sln -c Release
 dotnet test SparkleShare.Core.sln -c Release
 ```
 
-Requires [.NET 8 SDK](https://dotnet.microsoft.com/download).
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download) (LTS since November 2025).
 
 Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platform projects are migrated (Phase 1+).
 
@@ -22,18 +22,18 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 ### Done (commit: Phase 0 initial)
 
 - [x] Git branch `migrate/net8-phase0`
-- [x] `Sparkles` → SDK-style `net8.0`
-- [x] `Sparkles.Git` → SDK-style `net8.0`
-- [x] `Sparkles.Tests` → SDK-style `net8.0`, NUnit via PackageReference
+- [x] `Sparkles` → SDK-style `net10.0`
+- [x] `Sparkles.Git` → SDK-style `net10.0`
+- [x] `Sparkles.Tests` → SDK-style `net10.0`, NUnit via PackageReference
 - [x] `SparkleShare.Core.sln` (core libraries + tests only)
 - [x] `Directory.Build.props`, `global.json`
 - [x] CI workflow `.github/workflows/dotnet-core.yml`
 - [x] Cursor rules `.cursor/rules/sparkleshare-migration.mdc`
-- [x] All 9 unit tests passing on `net8.0`
+- [x] All 9 unit tests passing on `net10.0`
 
 ### Still open (Phase 0)
 
-- [ ] Extract `SparkleShare/Common` from shared project (`.shproj`) into `SparkleShare.Common` class library (`net8.0`)
+- [ ] Extract `SparkleShare/Common` from shared project (`.shproj`) into `SparkleShare.Common` class library (`net10.0`)
 - [ ] Add `SparkleShare.Common` to `SparkleShare.Core.sln`
 - [ ] Fix or track build warnings: `Thread.Abort`, `WebRequest`, `TimeZone`
 - [ ] Expand test coverage for `Sparkles.Git` (repos, fetch, config)
@@ -46,7 +46,7 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 
 **Estimate: 7–11 person-days (with Cursor)**
 
-- [ ] New SDK project `SparkleShare.Mac` → `net8.0-macos`
+- [ ] New SDK project `SparkleShare.Mac` → `net10.0-macos`
 - [ ] Replace Xamarin.Mac with `Microsoft.macOS` workload
 - [ ] Port AppKit UI (~12 files), `MainMenu.xib`, resources
 - [ ] Port `SparkleMacWatcher` (FSEvents)
@@ -61,7 +61,7 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 
 **Estimate: 6–10 person-days (with Cursor)**
 
-- [ ] `SparkleShare.Windows` → `net8.0-windows`
+- [ ] `SparkleShare.Windows` → `net10.0-windows`
 - [ ] Unify WinForms shell + WPF UI (or WPF-only entry)
 - [ ] Tray icon, protocol handler, invite opener
 - [ ] Installer / packaging
@@ -72,7 +72,7 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 
 **Estimate: 10–18 person-days (with Cursor)**
 
-- [ ] Mono → .NET 8 for Linux project
+- [ ] Mono → .NET 10 for Linux project
 - [ ] GTK# / Meson: update or replace bindings (notify, soup, webkit2gtk)
 - [ ] `.desktop`, AppData, autostart
 - [ ] CI Linux package build
