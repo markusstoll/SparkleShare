@@ -24,6 +24,7 @@ SparkleShare/Mac/*.tar.gz
 /sparkleshare-*
 desktop.ini
 _ReSharper.*
+.idea/
 *.msi
 *.wixobj
 *.wixpdb
