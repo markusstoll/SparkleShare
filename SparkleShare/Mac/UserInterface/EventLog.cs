@@ -1,4 +1,4 @@
-﻿﻿﻿﻿//   SparkleShare, a collaboration and sharing tool.
+﻿//   SparkleShare, a collaboration and sharing tool.
 //   Copyright (C) 2010  Hylke Bons <hi@planetpeanut.uk>
 //
 //   This program is free software: you can redistribute it and/or modify
@@ -345,7 +345,8 @@ namespace SparkleShare {
                     PreventsApplicationTerminationWhenModal = false
                 };
 
-                if ((NSPanelButtonType) (int) panel.RunModal () == NSPanelButtonType.Ok) {
+                // NSPanelButtonType was removed from modern AppKit bindings; OK == 1 (NSModalResponseStop).
+                if (panel.RunModal () == 1) {
                     string target_file_path = Path.Combine (panel.DirectoryUrl.RelativePath, panel.NameFieldStringValue);
                     Controller.SaveDialogCompleted(target_file_path);
                 
