@@ -1,4 +1,4 @@
-﻿﻿﻿//   SparkleShare, an instant update workflow to Git.
+﻿//   SparkleShare, an instant update workflow to Git.
 //   Copyright (C) 2010  Hylke Bons <hi@planetpeanut.uk>
 //
 //   This program is free software: you can redistribute it and/or modify
@@ -121,7 +121,7 @@ namespace SparkleShare {
         public override void OrderFrontRegardless ()
         {
             NSApplication.SharedApplication.AddWindowsItem (this, "SparkleShare Setup", isFilename: false);
-            NSApplication.SharedApplication.ActivateIgnoringOtherApps (true);
+            AppKitCompat.ActivateApp ();
             MakeKeyAndOrderFront (this);
 
             base.OrderFrontRegardless ();

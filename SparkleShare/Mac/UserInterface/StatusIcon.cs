@@ -1,4 +1,4 @@
-﻿﻿//   SparkleShare, an instant update workflow to Git.
+﻿//   SparkleShare, an instant update workflow to Git.
 //   Copyright (C) 2010  Hylke Bons <hi@planetpeanut.uk>
 //
 //   This program is free software: you can redistribute it and/or modify
@@ -50,9 +50,9 @@ namespace SparkleShare {
 
         public StatusIcon ()
         {
-            this.status_item.HighlightMode  = true;
-            this.status_item.Image          = this.syncing_idle_image;
-            this.status_item.Image.Template = true;
+            // NSStatusBarButton handles highlighting automatically; the old NSStatusItem.Image
+            // and HighlightMode properties have been soft-deprecated since macOS 10.10.
+            SetStatusImage (this.syncing_idle_image);
 
             if (Environment.OSVersion.Version.Major >= 14)
                 this.sparkleshare_image = (NSImage)NSImage.ImageNamed ("sparkleshare-folder-yosemite.icns").Copy();
@@ -63,15 +63,16 @@ namespace SparkleShare {
 
             Controller.UpdateIconEvent += delegate (IconState state) {
                 SparkleShare.Controller.Invoke (() => {
-                    switch (state) {
-                    case IconState.Idle: { this.status_item.Image = this.syncing_idle_image; break; }
-                    case IconState.SyncingUp: { this.status_item.Image = this.syncing_up_image; break; }
-                    case IconState.SyncingDown: { this.status_item.Image = this.syncing_down_image; break; }
-                    case IconState.Syncing: { this.status_item.Image = this.syncing_image; break; }
-                    case IconState.Error: { this.status_item.Image = this.syncing_error_image; break; }
-                    }
+                    NSImage image = state switch {
+                        IconState.Idle        => this.syncing_idle_image,
+                        IconState.SyncingUp   => this.syncing_up_image,
+                        IconState.SyncingDown => this.syncing_down_image,
+                        IconState.Syncing     => this.syncing_image,
+                        IconState.Error       => this.syncing_error_image,
+                        _                     => this.syncing_idle_image,
+                    };
 
-                    this.status_item.Image.Template = true;
+                    SetStatusImage (image);
                 });
             };
             
@@ -256,7 +257,18 @@ namespace SparkleShare {
             this.menu.Delegate    = this.menu_delegate;
             this.status_item.Menu = this.menu;
         }
-    
+
+
+        // Routes through NSStatusItem.Button (NSStatusBarButton) instead of the
+        // soft-deprecated NSStatusItem.Image property.
+        private void SetStatusImage (NSImage image)
+        {
+            image.Template = true;
+
+            if (this.status_item.Button != null)
+                this.status_item.Button.Image = image;
+        }
+
 
         private class SparkleMenuDelegate : NSMenuDelegate {
             

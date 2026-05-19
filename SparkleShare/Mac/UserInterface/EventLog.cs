@@ -358,7 +358,7 @@ namespace SparkleShare {
 
         public override void OrderFrontRegardless ()
         {
-            NSApplication.SharedApplication.ActivateIgnoringOtherApps (true);
+            AppKitCompat.ActivateApp ();
             MakeKeyAndOrderFront (this);
             base.OrderFrontRegardless ();
         }

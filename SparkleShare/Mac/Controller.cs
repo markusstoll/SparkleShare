@@ -134,14 +134,14 @@ namespace SparkleShare {
         public override void OpenFolder (string path)
         {
             path = Uri.UnescapeDataString (path);
-            NSWorkspace.SharedWorkspace.OpenFile (path);
+            NSWorkspace.SharedWorkspace.OpenUrl (NSUrl.FromFilename (path));
         }
-        
-        
+
+
         public override void OpenFile (string path)
         {
             path = Uri.UnescapeDataString (path);
-            NSWorkspace.SharedWorkspace.OpenFile (path);
+            NSWorkspace.SharedWorkspace.OpenUrl (NSUrl.FromFilename (path));
         }
 
         
