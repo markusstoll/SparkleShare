@@ -34,13 +34,15 @@ namespace Sparkles {
             if (string.IsNullOrEmpty (uri))
                 uri = Configuration.DefaultConfiguration.GetFolderOptionalAttribute (folder_name, "announcements_url");
 
-            // This is SparkleShare's centralized notification service.
-            // It communicates "It's time to sync!" signals between clients.
-            //
-            // Please see the SparkleShare wiki if you wish to run
-            // your own service instead
-            if (string.IsNullOrEmpty (uri))
-                uri = "tcp://announcements.sparkleshare.org:443";
+            // No notification service configured: the historic central service
+            // tcp://announcements.sparkleshare.org:443 is no longer available, so
+            // we simply skip the listener and let the repository fall back to
+            // polling. Set "announcements_url" globally or per-folder to opt in.
+            if (string.IsNullOrEmpty (uri)) {
+                Logger.LogInfo ("ListenerFactory",
+                    "No announcements_url configured for " + folder_name + "; notification listener disabled");
+                return null;
+            }
 
             var announce_uri = new Uri (uri);
 

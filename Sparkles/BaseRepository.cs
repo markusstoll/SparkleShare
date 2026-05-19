@@ -231,8 +231,8 @@ namespace Sparkles {
                 if (HasRemoteChanges && !this.is_syncing)
                     SyncDownBase ();
                 
-                // if (this.listener.IsConnected)
-                //    this.poll_interval = PollInterval.Long;
+                if (this.listener != null && this.listener.IsConnected)
+                    this.poll_interval = PollInterval.Long;
             }
             
             // In the unlikely case that we haven't synced up our
@@ -412,7 +412,8 @@ namespace Sparkles {
                 HasUnsyncedChanges = false;
                 this.poll_interval = PollInterval.Long;
 
-                // this.listener.Announce (new Announcement (Identifier, CurrentRevision));
+                if (this.listener != null && this.listener.IsConnected)
+                    this.listener.Announce (new Announcement (Identifier, CurrentRevision));
 
                 Status = SyncStatus.Idle;
                 SyncStatusChanged (Status);
@@ -427,7 +428,8 @@ namespace Sparkles {
                 if (Error == ErrorStatus.None && SyncUp ()) {
                     HasUnsyncedChanges = false;
 
-                    // this.listener.Announce (new Announcement (Identifier, CurrentRevision));
+                    if (this.listener != null && this.listener.IsConnected)
+                        this.listener.Announce (new Announcement (Identifier, CurrentRevision));
 
                     Status = SyncStatus.Idle;
                     SyncStatusChanged (Status);
@@ -525,17 +527,27 @@ namespace Sparkles {
 
         void CreateListener ()
         {
-            // this.listener = ListenerFactory.CreateListener (Name, Identifier);
+            try {
+                this.listener = ListenerFactory.CreateListener (Name, Identifier);
 
-            // if (this.listener.IsConnected)
-            //    this.poll_interval = PollInterval.Long;
+            } catch (Exception e) {
+                Logger.LogInfo (Name, "Failed to create notification listener; falling back to polling only", e);
+                this.listener = null;
+                return;
+            }
 
-            // this.listener.Connected            += ListenerConnectedDelegate;
-            // this.listener.Disconnected         += ListenerDisconnectedDelegate;
-            // this.listener.AnnouncementReceived += ListenerAnnouncementReceivedDelegate;
+            if (this.listener == null)
+                return;
 
-            // if (!this.listener.IsConnected && !this.listener.IsConnecting)
-            //    this.listener.Connect ();
+            if (this.listener.IsConnected)
+                this.poll_interval = PollInterval.Long;
+
+            this.listener.Connected            += ListenerConnectedDelegate;
+            this.listener.Disconnected         += ListenerDisconnectedDelegate;
+            this.listener.AnnouncementReceived += ListenerAnnouncementReceivedDelegate;
+
+            if (!this.listener.IsConnected && !this.listener.IsConnecting)
+                this.listener.Connect ();
         }
 
         
@@ -659,10 +671,14 @@ namespace Sparkles {
                 this.remote_timer = null;
             }
 
-            // this.listener.Disconnected         -= ListenerDisconnectedDelegate;
-            // this.listener.AnnouncementReceived -= ListenerAnnouncementReceivedDelegate;
+            if (this.listener != null) {
+                this.listener.Connected            -= ListenerConnectedDelegate;
+                this.listener.Disconnected         -= ListenerDisconnectedDelegate;
+                this.listener.AnnouncementReceived -= ListenerAnnouncementReceivedDelegate;
 
-            // this.listener.Dispose ();
+                this.listener.Dispose ();
+                this.listener = null;
+            }
 
             if (!UseCustomWatcher && this.watcher != null)
                 this.watcher.Dispose ();
