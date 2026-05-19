@@ -18,10 +18,8 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Net;
+using System.Net.Http;
 using System.Net.Mime;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 
 using Sparkles;
 
@@ -34,11 +32,6 @@ namespace SparkleShare
 
         public static string GetAvatar (string email, int size, string target_path, string provider)
         {
-            #if __MonoCS__
-                if (provider == "gravatar")
-                    ServicePointManager.ServerCertificateValidationCallback = GetGravatarValidationCallBack;
-            #endif
-
             email = email.ToLower ();
 
             if (skipped_avatars.Contains (email))
@@ -68,39 +61,41 @@ namespace SparkleShare
                 return null;
             }
 
-            var client = new WebClient ();
-            string url = "";
+            string url;
 
             if (provider == "libravatar")
-                url =  "https://seccdn.libravatar.org/avatar/" + email.MD5 () + ".png?s=" + size + "&d=404";
+                url = "https://seccdn.libravatar.org/avatar/" + email.MD5 () + ".png?s=" + size + "&d=404";
             else
-                url =  "https://secure.gravatar.com/avatar/" + email.MD5 () + ".png?s=" + size + "&d=404";
+                url = "https://secure.gravatar.com/avatar/" + email.MD5 () + ".png?s=" + size + "&d=404";
 
             try {
-                byte [] buffer = client.DownloadData (url);
+                using (var client = new HttpClient ())
+                using (HttpResponseMessage response = client.GetAsync (url).GetAwaiter ().GetResult ()) {
+                    if (!response.IsSuccessStatusCode)
+                        return null;
 
-                if (client.ResponseHeaders ["content-type"].Equals (MediaTypeNames.Image.Jpeg, StringComparison.InvariantCultureIgnoreCase)) {
-                    avatar_file_path += ".jpg";
+                    byte [] buffer = response.Content.ReadAsByteArrayAsync ().GetAwaiter ().GetResult ();
+                    string content_type = response.Content.Headers.ContentType?.MediaType ?? "";
 
-                } else if (client.ResponseHeaders ["content-type"].Equals (MediaTypeNames.Image.Gif, StringComparison.InvariantCultureIgnoreCase)) {
-                    avatar_file_path += ".gif";
+                    if (content_type.Equals (MediaTypeNames.Image.Jpeg, StringComparison.InvariantCultureIgnoreCase))
+                        avatar_file_path += ".jpg";
+                    else if (content_type.Equals (MediaTypeNames.Image.Gif, StringComparison.InvariantCultureIgnoreCase))
+                        avatar_file_path += ".gif";
+                    else
+                        avatar_file_path += ".png";
 
-                } else {
-                    avatar_file_path += ".png";
-                }
+                    if (buffer.Length > 255) {
+                        if (!Directory.Exists (avatars_path)) {
+                            Directory.CreateDirectory (avatars_path);
+                            Logger.LogInfo ("Avatars", "Created '" + avatars_path + "'");
+                        }
 
-                if (buffer.Length > 255) {
-                    if (!Directory.Exists (avatars_path)) {
-                        Directory.CreateDirectory (avatars_path);
-                        Logger.LogInfo ("Avatars", "Created '" + avatars_path + "'");
+                        File.WriteAllBytes (avatar_file_path, buffer);
+                        Logger.LogInfo ("Avatars", "Fetched " + size + "x" + size + " avatar for " + email);
+
+                        return avatar_file_path;
                     }
 
-                    File.WriteAllBytes (avatar_file_path, buffer);
-                    Logger.LogInfo ("Avatars", "Fetched " + size + "x" + size + " avatar for " + email);
-
-                    return avatar_file_path;
-
-                } else {
                     return null;
                 }
 
@@ -110,28 +105,6 @@ namespace SparkleShare
 
                 return null;
             }
-        }
-
-
-        private static bool GetGravatarValidationCallBack (Object sender,
-            X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
-        {
-            X509Certificate2 certificate2 = new X509Certificate2 (certificate.GetRawCertData ());
-
-            // On some systems (mostly Linux) we can't assume the needed certificates are
-            // available, so we have to check the certificate's SHA-1 fingerprint manually.
-            //
-            // SHA1 fingerprinter obtained from https://www.gravatar.com/ on Oct 23 2020
-            // Set to expire on Nov 16 2022
-            
-            string gravatar_cert_fingerprint = "846963703FD297724E91BDF47FFE4BC19E93EA15";
-
-            if (!certificate2.Thumbprint.Equals (gravatar_cert_fingerprint)) {
-                Logger.LogInfo ("Avatars", "Invalid certificate for https://www.gravatar.com/");
-                return false;
-            }
-
-            return true;
         }
     }
 }

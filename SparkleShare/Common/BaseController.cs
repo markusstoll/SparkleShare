@@ -27,6 +27,28 @@ namespace SparkleShare {
 
     public abstract class BaseController {
 
+        // Explicit backend factory used in place of dynamic Type.GetType lookups so that
+        // trimming/linker can prove which types are reachable (otherwise IL2057). Add
+        // new backends here when their projects are referenced by the platform head.
+        static BaseRepository CreateRepositoryForBackend (string backend, string folder_path,
+            Configuration config, SSHAuthenticationInfo auth_info)
+        {
+            return backend switch {
+                "Git" => new Sparkles.Git.GitRepository (folder_path, config, auth_info),
+                _     => throw new NotSupportedException ("Unknown backend: " + backend)
+            };
+        }
+
+
+        static BaseFetcher CreateFetcherForBackend (string backend, SparkleFetcherInfo info,
+            SSHAuthenticationInfo auth_info)
+        {
+            return backend switch {
+                "Git" => new Sparkles.Git.GitFetcher (info, auth_info),
+                _     => throw new NotSupportedException ("Unknown backend: " + backend)
+            };
+        }
+
         public BaseRepository [] Repositories {
             get {
                 lock (this.repo_lock)
@@ -405,9 +427,8 @@ namespace SparkleShare {
             string backend = Config.BackendByName (folder_name);
 
             try {
-                repo = (BaseRepository) Activator.CreateInstance (
-                    Type.GetType ("Sparkles." + backend + "." + backend + "Repository, Sparkles." + backend),
-                        new object [] { folder_path, Config, SSHAuthenticationInfo.DefaultAuthenticationInfo });
+                repo = CreateRepositoryForBackend (backend, folder_path, Config,
+                    SSHAuthenticationInfo.DefaultAuthenticationInfo);
 
             } catch (Exception e) {
                 Logger.LogInfo ("Controller", "Failed to load backend '" + backend + "' for '" + folder_name + "': ", e);
@@ -586,9 +607,7 @@ namespace SparkleShare {
                 Directory.Delete (info.TargetDirectory, recursive: true);
 
             try {
-                this.fetcher = (BaseFetcher) Activator.CreateInstance (
-                    Type.GetType ("Sparkles." + backend + "." + backend + "Fetcher, Sparkles." + backend),
-                        new object [] { info, UserAuthenticationInfo});
+                this.fetcher = CreateFetcherForBackend (backend, info, UserAuthenticationInfo);
 
             } catch (Exception e) {
                 Logger.LogInfo ("Controller",
