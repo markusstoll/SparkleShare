@@ -237,13 +237,16 @@ namespace Sparkles {
 
         public override void Dispose ()
         {
+            this.is_connected  = false;
+            this.is_connecting = false;
+
             if (this.socket != null) {
                 this.socket.Close ();
                 this.socket = null;
             }
 
-            this.thread.Abort ();
-            this.thread.Join ();
+            if (this.thread != null && this.thread.IsAlive && !this.thread.Join (TimeSpan.FromSeconds (5)))
+                Logger.LogInfo ("ListenerTcp", "Timed out waiting for listener thread to stop");
 
             base.Dispose ();
         }

@@ -16,8 +16,8 @@
 
 
 using System;
-using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Xml;
 
@@ -67,32 +67,21 @@ namespace Sparkles {
             if (string.IsNullOrEmpty (AcceptUrl))
                 return true;
 
-            string post_data   = "public_key=" + Uri.EscapeDataString (public_key);
-            byte [] post_bytes = Encoding.UTF8.GetBytes (post_data);
-
-            WebRequest request    = WebRequest.Create (AcceptUrl);
-            request.Method        = "POST";
-            request.ContentType   = "application/x-www-form-urlencoded";
-            request.ContentLength = post_bytes.Length;
-
-            Stream data_stream = request.GetRequestStream ();
-            data_stream.Write (post_bytes, 0, post_bytes.Length);
-            data_stream.Close ();
-
-            HttpWebResponse response = null;
+            string post_data = "public_key=" + Uri.EscapeDataString (public_key);
 
             try {
-                response = (HttpWebResponse) request.GetResponse ();
-                response.Close ();
+                using (var client = new HttpClient ())
+                using (var content = new StringContent (post_data, Encoding.UTF8, "application/x-www-form-urlencoded"))
+                using (HttpResponseMessage response = client.PostAsync (AcceptUrl, content).GetAwaiter ().GetResult ()) {
+                    if (response.StatusCode == HttpStatusCode.OK) {
+                        Logger.LogInfo ("Invite", "Uploaded public key to " + AcceptUrl);
+                        return true;
+                    }
+                }
 
-            } catch (WebException e) {
+            } catch (Exception e) {
                 Logger.LogInfo ("Invite", "Failed uploading public key to " + AcceptUrl + "", e);
                 return false;
-            }
-
-            if (response != null && response.StatusCode == HttpStatusCode.OK) {
-                Logger.LogInfo ("Invite", "Uploaded public key to " + AcceptUrl);
-                return true;
             }
 
             return false;

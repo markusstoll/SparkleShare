@@ -813,7 +813,7 @@ namespace Sparkles.Git {
                 int.Parse (match.Groups ["hour"].Value), int.Parse (match.Groups ["minute"].Value), int.Parse (match.Groups ["second"].Value));
 
             string time_zone = match.Groups ["timezone"].Value;
-            int our_offset = TimeZone.CurrentTimeZone.GetUtcOffset (DateTime.Now).Hours;
+            int our_offset = TimeZoneInfo.Local.GetUtcOffset (DateTime.Now).Hours;
             int their_offset = int.Parse (time_zone.Substring (0, 3));
 
             change_set.Timestamp = change_set.Timestamp.AddHours (their_offset * -1);

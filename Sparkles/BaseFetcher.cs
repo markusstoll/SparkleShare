@@ -249,8 +249,11 @@ namespace Sparkles {
 
         public void Dispose ()
         {
-            if (thread != null)
-                thread.Abort ();
+            IsActive = false;
+            Stop ();
+
+            if (thread != null && thread.IsAlive && !thread.Join (TimeSpan.FromSeconds (5)))
+                Logger.LogInfo ("Fetcher", "Timed out waiting for fetcher thread to stop");
         }
 
 

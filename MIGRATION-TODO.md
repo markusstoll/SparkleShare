@@ -30,12 +30,12 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 - [x] CI workflow `.github/workflows/dotnet-core.yml`
 - [x] Cursor rules `.cursor/rules/sparkleshare-migration.mdc`
 - [x] All 9 unit tests passing on `net10.0`
+- [x] Build warnings fixed: `Thread.Abort`, `WebRequest`, `TimeZone`
 
 ### Still open (Phase 0)
 
 - [ ] Extract `SparkleShare/Common` from shared project (`.shproj`) into `SparkleShare.Common` class library (`net10.0`)
 - [ ] Add `SparkleShare.Common` to `SparkleShare.Core.sln`
-- [ ] Fix or track build warnings: `Thread.Abort`, `WebRequest`, `TimeZone`
 - [ ] Expand test coverage for `Sparkles.Git` (repos, fetch, config)
 - [ ] Document build in `README.md` (Core solution vs legacy solution)
 - [ ] Decide legacy bridge: multi-target `Sparkles` for old UI builds vs. accept broken `SparkleShare.sln` until Phase 1
