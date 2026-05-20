@@ -32,6 +32,8 @@ _ReSharper.*
 *.dotCover
 SparkleShare/Windows/build/
 .vs/
+dist/
+scripts/sign-pack-notarize-mac.local.sh
 
 # NuGet Packages
 *.nupkg

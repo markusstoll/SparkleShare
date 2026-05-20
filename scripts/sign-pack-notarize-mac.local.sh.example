@@ -1,0 +1,5 @@
+# Copy to sign-pack-notarize-mac.local.sh and fill in your values.
+# This file is gitignored; do not commit real credentials.
+
+SIGNING_IDENTITY='Developer ID Application: Your Name (TEAMID)'
+NOTARY_KEYCHAIN_PROFILE='your-notarytool-profile'

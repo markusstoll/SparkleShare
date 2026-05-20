@@ -86,12 +86,6 @@
     </Compile>
   </ItemGroup>
 
-  <!-- The legacy SparkleShareInviteOpener prebuilt bundle is not part of the new build -->
-  <ItemGroup>
-    <Compile Remove="SparkleShareInviteOpener.app\**" />
-    <None Remove="SparkleShareInviteOpener.app\**" />
-  </ItemGroup>
-
   <!-- After the macOS workload finishes the .app bundle, unpack bundled git (see postBuild.sh + checkGit.sh). -->
   <Target Name="SparkleSharePostBuildBundle"
           AfterTargets="_PostProcessAppBundle"

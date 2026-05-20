@@ -34,13 +34,35 @@ else
 fi
 
 EFFECTIVE_RID="${RID:-$HOST_RID}"
-APP_PATH="SparkleShare/Mac/bin/${CONFIG}/net10.0-macos/${EFFECTIVE_RID}/SparkleShare.app"
-if [ -d "$APP_PATH" ]; then
+MAC_BIN="SparkleShare/Mac/bin/${CONFIG}/net10.0-macos"
+APP_PATH=""
+if [ -n "$EFFECTIVE_RID" ] && [ -f "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app/Contents/Resources/MainMenu.nib" ]; then
+    APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
+elif [ -f "$MAC_BIN/SparkleShare.app/Contents/Resources/MainMenu.nib" ]; then
+    APP_PATH="$MAC_BIN/SparkleShare.app"
+elif [ -n "$EFFECTIVE_RID" ] && [ -d "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app" ]; then
+    APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
+elif [ -d "$MAC_BIN/SparkleShare.app" ]; then
+    APP_PATH="$MAC_BIN/SparkleShare.app"
+fi
+
+if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
     BIN="$APP_PATH/Contents/MacOS/SparkleShare"
     echo
     echo "Built bundle: $APP_PATH"
     if command -v lipo >/dev/null 2>&1 && [ -f "$BIN" ]; then
         echo -n "  Architecture(s): "
         lipo -archs "$BIN"
+    fi
+    if [ ! -f "$APP_PATH/Contents/Resources/MainMenu.nib" ]; then
+        echo
+        echo "Warning: bundle looks incomplete (missing MainMenu.nib). Prefer:"
+        echo "  $MAC_BIN/SparkleShare.app"
+        echo "Run a clean Release build if signing fails."
+    fi
+    if [ "$CONFIG" = "Release" ]; then
+        echo
+        echo "Note: Run scripts/sign-pack-notarize-mac.sh to build dist/mac/SparkleShare_VERSION.dmg."
+        echo "      Do not sign/staple bin/Release in place — the next build will fail to overwrite it."
     fi
 fi

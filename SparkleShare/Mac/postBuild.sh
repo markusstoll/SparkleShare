@@ -12,8 +12,3 @@ ${projectFolder}/checkGit.sh
 rm -rf ${bundle}/Contents/Resources/git
 mkdir -p ${bundle}/Contents/Resources/git
 tar -x -f ${projectFolder}/git.tar.gz --directory ${bundle}/Contents/Resources/git
-if [ -d "${projectFolder}/SparkleShareInviteOpener.app" ]; then
-	cp -R "${projectFolder}/SparkleShareInviteOpener.app" "${bundle}/Contents/Resources"
-else
-	echo "Note: SparkleShareInviteOpener.app not found; skipping copy."
-fi

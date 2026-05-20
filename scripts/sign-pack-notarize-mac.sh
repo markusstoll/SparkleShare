@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Sign, pack, and notarize the SparkleShare macOS app bundle for distribution.
+# Sign, pack as a drag-to-Applications DMG, notarize, and staple for macOS distribution.
 #
 # One-time notary credentials (app-specific password from appleid.apple.com):
 #   xcrun notarytool store-credentials "YOUR_PROFILE_NAME" \
@@ -11,17 +11,29 @@
 # Build first:
 #   CONFIG=Release scripts/build-mac.sh
 #
-# Then:
+# Then (after configuring credentials — see below):
 #   scripts/sign-pack-notarize-mac.sh
+#
+# Credentials (pick one):
+#   1. Copy scripts/sign-pack-notarize-mac.local.sh.example to
+#      scripts/sign-pack-notarize-mac.local.sh and edit (gitignored)
+#   2. Export SIGNING_IDENTITY and NOTARY_KEYCHAIN_PROFILE for this shell
 #
 set -euo pipefail
 
-# --- Edit these two values ---------------------------------------------------
-SIGNING_IDENTITY='Developer ID Application: Your Name (TEAMID)'
-NOTARY_KEYCHAIN_PROFILE='YOUR_NOTARY_PROFILE'
-# -----------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+LOCAL_CONFIG="$SCRIPT_DIR/sign-pack-notarize-mac.local.sh"
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Defaults; overridden by sign-pack-notarize-mac.local.sh (if present).
+SIGNING_IDENTITY="${SIGNING_IDENTITY:-Developer ID Application: Your Name (TEAMID)}"
+NOTARY_KEYCHAIN_PROFILE="${NOTARY_KEYCHAIN_PROFILE:-YOUR_NOTARY_PROFILE}"
+
+if [ -f "$LOCAL_CONFIG" ]; then
+    # shellcheck source=/dev/null
+    . "$LOCAL_CONFIG"
+fi
+
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 MAC_DIR="$ROOT/SparkleShare/Mac"
 ENTITLEMENTS="$MAC_DIR/SparkleShare.entitlements"
 CSPROJ="$MAC_DIR/SparkleShare.Mac.csproj"
@@ -37,11 +49,55 @@ case "$HOST_ARCH" in
     *)      HOST_RID=""          ;;
 esac
 EFFECTIVE_RID="${RID:-$HOST_RID}"
-APP_PATH="$MAC_DIR/bin/$CONFIG/net10.0-macos/$EFFECTIVE_RID/SparkleShare.app"
 
 die() {
     echo "error: $*" >&2
     exit 1
+}
+
+# The .NET macOS SDK may leave a RID-specific stub under osx-arm64/ and the full
+# processed .app one level up (net10.0-macos/SparkleShare.app). Prefer the complete bundle.
+app_bundle_is_complete() {
+    local app="$1"
+
+    [ -d "$app" ] || return 1
+
+    for required in \
+        "Contents/Resources/sparkleshare-app.icns" \
+        "Contents/Resources/MainMenu.nib" \
+        "Contents/MacOS/SparkleShare" \
+        "Contents/MonoBundle/libcoreclr.dylib"; do
+        [ -e "$app/$required" ] || return 1
+    done
+
+    local resource_count
+    resource_count="$(find "$app/Contents/Resources" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
+    [ "$resource_count" -ge 10 ]
+}
+
+resolve_app_bundle_path() {
+    local config="$1"
+    local base="$MAC_DIR/bin/$config/net10.0-macos"
+    local tried=()
+    local app
+
+    if [ -n "$EFFECTIVE_RID" ]; then
+        tried+=("$base/$EFFECTIVE_RID/SparkleShare.app")
+    fi
+    tried+=("$base/SparkleShare.app")
+
+    for app in "${tried[@]}"; do
+        if app_bundle_is_complete "$app"; then
+            printf '%s' "$app"
+            return 0
+        fi
+    done
+
+    echo "Checked app bundle paths:" >&2
+    for app in "${tried[@]}"; do
+        echo "  $app" >&2
+    done
+    return 1
 }
 
 verify_app_bundle() {
@@ -72,10 +128,10 @@ verify_app_bundle() {
 
 require_config() {
     if [[ "$SIGNING_IDENTITY" == *'Your Name'* ]] || [[ -z "$SIGNING_IDENTITY" ]]; then
-        die "Set SIGNING_IDENTITY at the top of this script (Developer ID Application certificate)."
+        die "Set SIGNING_IDENTITY in $LOCAL_CONFIG (copy from sign-pack-notarize-mac.local.sh.example) or export it in the environment."
     fi
     if [[ "$NOTARY_KEYCHAIN_PROFILE" == 'YOUR_NOTARY_PROFILE' ]] || [[ -z "$NOTARY_KEYCHAIN_PROFILE" ]]; then
-        die "Set NOTARY_KEYCHAIN_PROFILE at the top of this script (notarytool keychain profile name)."
+        die "Set NOTARY_KEYCHAIN_PROFILE in $LOCAL_CONFIG or export it in the environment."
     fi
     [ -f "$ENTITLEMENTS" ] || die "Missing entitlements file: $ENTITLEMENTS"
 }
@@ -87,12 +143,11 @@ read_version() {
             | sed -E 's/.*<ApplicationDisplayVersion>([^<]+)<.*/\1/' \
             | tr -d '[:space:]')"
     fi
-    if [ -z "$version" ] && [ -d "$APP_PATH" ]; then
+    if [ -z "$version" ] && [ -n "${APP_PATH:-}" ] && [ -d "$APP_PATH" ]; then
         version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
             "$APP_PATH/Contents/Info.plist" 2>/dev/null || true)"
     fi
     [ -n "$version" ] || die "Could not determine version (ApplicationDisplayVersion or Info.plist)."
-    # Safe for filenames (keep dots and hyphens).
     version="${version//\//-}"
     version="${version// /_}"
     printf '%s' "$version"
@@ -132,22 +187,8 @@ sign_mach_o_tree() {
     done < <(find "$dir" -type f -print0)
 }
 
-sign_nested_app() {
-    local nested_app="$1"
-    [ -d "$nested_app" ] || return 0
-
-    echo "Signing nested app: $(basename "$nested_app")"
-    sign_mach_o_tree "$nested_app/Contents/MonoBundle"
-    sign_mach_o_tree "$nested_app/Contents/MacOS"
-    sign_mach_o_tree "$nested_app/Contents/Frameworks"
-    sign_mach_o_tree "$nested_app/Contents/PlugIns"
-    sign_file "$nested_app"
-}
-
 sign_app_bundle() {
     local app="$1"
-
-    sign_nested_app "$app/Contents/Resources/SparkleShareInviteOpener.app"
 
     echo "Signing .NET runtime (Contents/MonoBundle)…"
     sign_mach_o_tree "$app/Contents/MonoBundle"
@@ -169,41 +210,85 @@ sign_app_bundle() {
     codesign --verify --deep --strict --verbose=2 "$app"
 }
 
-create_zip() {
-    local app="$1"
-    local zip_path="$2"
+# Sign/staple in dist/ so bin/Release stays writable for the next dotnet build.
+prepare_dist_app() {
+    local build_app="$1"
+    local dist_app="$2"
 
-    rm -f "$zip_path"
-    ditto -c -k --keepParent "$app" "$zip_path"
+    rm -rf "$dist_app"
+    ditto "$build_app" "$dist_app"
+}
+
+create_dmg() {
+    local app="$1"
+    local dmg_path="$2"
+    local staging
+
+    staging="$(mktemp -d)"
+
+    echo "Staging DMG (app + Applications alias)…"
+    ditto "$app" "$staging/SparkleShare.app"
+    ln -s /Applications "$staging/Applications"
+
+    rm -f "$dmg_path"
+    hdiutil create \
+        -volname "SparkleShare" \
+        -srcfolder "$staging" \
+        -ov \
+        -format UDZO \
+        "$dmg_path"
+    rm -rf "$staging"
+
+    echo "Signing DMG…"
+    codesign --force --timestamp \
+        --sign "$SIGNING_IDENTITY" \
+        "$dmg_path"
+
+    codesign --verify --verbose=2 "$dmg_path"
+}
+
+verify_dmg_mounts() {
+    local dmg_path="$1"
+    local mount_dir
+    mount_dir="$(mktemp -d)"
+
+    hdiutil attach "$dmg_path" -mountpoint "$mount_dir" -nobrowse -quiet
+    codesign --verify --deep --strict "$mount_dir/SparkleShare.app"
+    hdiutil detach "$mount_dir" -quiet
+    rmdir "$mount_dir"
 }
 
 main() {
     require_config
 
-    [ -d "$APP_PATH" ] || die "App bundle not found: $APP_PATH\nRun: CONFIG=Release scripts/build-mac.sh"
+    APP_PATH="$(resolve_app_bundle_path "$CONFIG")" || die "No complete SparkleShare.app found under $MAC_DIR/bin/$CONFIG/net10.0-macos/\nRun: CONFIG=Release scripts/build-mac.sh"
 
     VERSION="$(read_version)"
-    ZIP_NAME="SparkleShare_${VERSION}.zip"
-    ZIP_PATH="$DIST_DIR/$ZIP_NAME"
+    DMG_NAME="SparkleShare_${VERSION}.dmg"
+    DMG_PATH="$DIST_DIR/$DMG_NAME"
+    DIST_APP="$DIST_DIR/SparkleShare.app"
 
     mkdir -p "$DIST_DIR"
 
-    echo "App:     $APP_PATH"
-    echo "Version: $VERSION"
-    echo "Output:  $ZIP_PATH"
+    echo "Build output:  $APP_PATH"
+    echo "Dist app:      $DIST_APP"
+    echo "Version:       $VERSION"
+    echo "Release DMG:   $DMG_PATH"
     echo
 
     verify_app_bundle "$APP_PATH"
 
-    sign_app_bundle "$APP_PATH"
+    echo "Copying app bundle to dist/ (keeps bin/Release rebuildable)…"
+    prepare_dist_app "$APP_PATH" "$DIST_APP"
+
+    sign_app_bundle "$DIST_APP"
 
     echo
-    echo "Creating zip for notarization…"
-    create_zip "$APP_PATH" "$ZIP_PATH"
+    create_dmg "$DIST_APP" "$DMG_PATH"
 
     echo
     echo "Submitting to Apple notary service (profile: $NOTARY_KEYCHAIN_PROFILE)…"
-    SUBMIT_OUTPUT="$(xcrun notarytool submit "$ZIP_PATH" \
+    SUBMIT_OUTPUT="$(xcrun notarytool submit "$DMG_PATH" \
         --keychain-profile "$NOTARY_KEYCHAIN_PROFILE" \
         --wait 2>&1)" || true
     echo "$SUBMIT_OUTPUT"
@@ -220,24 +305,24 @@ main() {
     fi
 
     echo
-    echo "Stapling notarization ticket to app bundle…"
-    xcrun stapler staple "$APP_PATH"
-    xcrun stapler validate "$APP_PATH"
+    echo "Stapling notarization ticket to DMG…"
+    xcrun stapler staple "$DMG_PATH"
+    xcrun stapler validate "$DMG_PATH"
 
-    echo
-    echo "Recreating distribution zip with stapled app…"
-    create_zip "$APP_PATH" "$ZIP_PATH"
+    echo "Verifying mounted app signature…"
+    verify_dmg_mounts "$DMG_PATH"
 
     echo
     echo "Done."
-    echo "  Signed app:  $APP_PATH"
-    echo "  Release zip: $ZIP_PATH"
+    echo "  Build output (unsigned, for rebuilds): $APP_PATH"
+    echo "  Signed dist app:                       $DIST_APP"
+    echo "  Release DMG (distribute this):         $DMG_PATH"
     echo
-    echo "Extract the zip with ditto (preserves bundle metadata):"
-    echo "  ditto -x -k \"$ZIP_PATH\" /path/to/destination/"
+    echo "Users open the DMG and drag SparkleShare to Applications."
     echo
-    echo "Optional local Gatekeeper check:"
-    echo "  spctl -a -t exec -vv \"$APP_PATH\""
+    echo "Optional Gatekeeper check after mount:"
+    echo "  open \"$DMG_PATH\""
+    echo "  spctl -a -t exec -vv /Volumes/SparkleShare/SparkleShare.app"
 }
 
 main "$@"

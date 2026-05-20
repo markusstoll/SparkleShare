@@ -65,7 +65,8 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 - [ ] Bundle git + LFS in app resources (`postBuild.sh` runs after `_PostProcessAppBundle`; verify LFS + release publish)
 - [ ] Improve cold-start responsiveness: batch repository initialization and throttle status item/menu updates
 - [ ] Login item: replace AppleScript with `SMAppService` where appropriate
-- [ ] Codesign + notarization pipeline
+- [ ] Register `sparkleshare://` URL scheme on macOS (replace removed legacy `SparkleShareInviteOpener.app`; download invite XML to `~/SparkleShare/` and open setup — see `sparkleshare://addProject/` in `BaseController` / protocol-handler-test)
+- [x] Codesign + notarization pipeline (`scripts/sign-pack-notarize-mac.sh` — DMG with Applications link, staple DMG)
 - [ ] Add `SparkleShare.Mac` to solution / CI
 
 ---
@@ -76,7 +77,7 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 
 - [ ] `SparkleShare.Windows` → `net10.0-windows`
 - [ ] Unify WinForms shell + WPF UI (or WPF-only entry)
-- [ ] Tray icon, protocol handler, invite opener
+- [ ] Tray icon, protocol handler (`sparkleshare://`; Windows still has separate `SparkleShareInviteOpener.exe`)
 - [ ] Installer / packaging
 
 ---
