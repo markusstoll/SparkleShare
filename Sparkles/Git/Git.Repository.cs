@@ -887,22 +887,34 @@ namespace Sparkles.Git {
         }
 
 
-        // The pre-push hook may have been changed by Git LFS, overwrite it to use our own configuration
+        // Git LFS may rewrite hooks and filter.*; keep SSH settings in sync with FormatGitSSHCommand.
         void PrepareGitLFS ()
         {
+            bool has_lfs_filter = GitCommand.LfsFilterIsConfigured (LocalPath);
+
+            // InstallGitLFS() always wrote filter.lfs on project setup, but projects.xml only
+            // stores storage_type when FetchedRepoStorageType != Plain — so many LFS repos stay Plain.
+            if (has_lfs_filter && StorageType != StorageType.LargeFiles) {
+                StorageType = StorageType.LargeFiles;
+                local_config.SetFolderOptionalAttribute (Name, "storage_type", StorageType.LargeFiles.ToString ());
+            }
+
+            if (StorageType == StorageType.LargeFiles || has_lfs_filter)
+                GitCommand.ConfigureLfsFilter (LocalPath, auth_info);
+
             string pre_push_hook_path = Path.Combine (LocalPath, ".git", "hooks", "pre-push");
             string pre_push_hook_content;
 
             if (InstallationInfo.OperatingSystem == OS.macOS || InstallationInfo.OperatingSystem == OS.Windows) {
                 pre_push_hook_content =
                     "#!/bin/sh" + Environment.NewLine +
-                    "env GIT_SSH_COMMAND='" + GitCommand.FormatGitSSHCommand (auth_info) + "' " +
+                    GitCommand.FormatGitSSHEnvPrefix (auth_info) +
                     Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/")  + " pre-push \"$@\"";
 
             } else {
                 pre_push_hook_content =
                     "#!/bin/sh" + Environment.NewLine +
-                    "env GIT_SSH_COMMAND='" + GitCommand.FormatGitSSHCommand (auth_info) + "' " +
+                    GitCommand.FormatGitSSHEnvPrefix (auth_info) +
                     "git-lfs pre-push \"$@\"";
             }
 

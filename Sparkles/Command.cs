@@ -114,6 +114,13 @@ namespace Sparkles {
         }
 
 
+        public void RemoveEnvironmentVariable (string variable)
+        {
+            if (StartInfo.EnvironmentVariables.ContainsKey (variable))
+                StartInfo.EnvironmentVariables.Remove (variable);
+        }
+
+
         protected static string LocateCommand (string name)
         {
             string [] possible_command_paths = {

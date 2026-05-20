@@ -421,32 +421,7 @@ namespace Sparkles.Git {
 
         void InstallGitLFS ()
         {
-            var git_config_required = new GitCommand (TargetFolder, "config filter.lfs.required true");
-
-            string GIT_SSH_COMMAND = GitCommand.FormatGitSSHCommand (auth_info);
-            string smudge_command;
-            string clean_command;
-
-            if (InstallationInfo.OperatingSystem == OS.macOS || InstallationInfo.OperatingSystem == OS.Windows) {
-                smudge_command = "env GIT_SSH_COMMAND='" + GIT_SSH_COMMAND + "' " +
-                    Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/") + " smudge %f";
-
-                clean_command = Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/") + " clean %f";
-
-            } else {
-                smudge_command = "env GIT_SSH_COMMAND='" + GIT_SSH_COMMAND + "' git-lfs smudge %f";
-                clean_command = "git-lfs clean %f";
-            }
-
-            var git_config_smudge = new GitCommand (TargetFolder,
-                string.Format ("config filter.lfs.smudge \"{0}\"", smudge_command));
-
-            var git_config_clean = new GitCommand (TargetFolder,
-                string.Format ("config filter.lfs.clean '{0}'", clean_command));
-
-            git_config_required.StartAndWaitForExit ();
-            git_config_clean.StartAndWaitForExit ();
-            git_config_smudge.StartAndWaitForExit ();
+            GitCommand.ConfigureLfsFilter (TargetFolder, auth_info);
         }
     }
 }

@@ -17,7 +17,10 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text.RegularExpressions;
+
+using Sparkles;
 
 namespace Sparkles.Git {
 
@@ -85,8 +88,10 @@ namespace Sparkles.Git {
 
             string GIT_SSH_COMMAND = SSHCommand.SSHCommandPath;
 
-            if (auth_info != null)
+            if (auth_info != null) {
                 GIT_SSH_COMMAND = FormatGitSSHCommand (auth_info);
+                DisableSSHAgentEnvironment ();
+            }
 
             if (ExecPath != null)
                 SetEnvironmentVariable ("GIT_EXEC_PATH", ExecPath);
@@ -225,8 +230,70 @@ namespace Sparkles.Git {
                 "-i " + auth_info.PrivateKeyFilePath.Replace ("\\", "/").Replace (" ", "\\ ") + " " +
                 "-o UserKnownHostsFile=" + auth_info.KnownHostsFilePath.Replace ("\\", "/").Replace (" ", "\\ ") + " " +
                 "-o IdentitiesOnly=yes" + " " + // Don't fall back to other keys on the system
+                "-o IdentityAgent=none" + " " + // Don't use ssh-agent (broken agents can hang)
                 "-o PasswordAuthentication=no" + " " + // Don't hang on possible password prompts
+                "-o BatchMode=yes" + " " +
                 "-F /dev/null"; // Ignore the system's SSH config file
+        }
+
+
+        /// <summary>
+        /// Prefix for shell hooks (Git LFS) so git-lfs subprocesses use only the SparkleShare key.
+        /// </summary>
+        public static string FormatGitSSHEnvPrefix (SSHAuthenticationInfo auth_info)
+        {
+            return "env SSH_AUTH_SOCK= SSH_AGENT_PID= GIT_SSH_COMMAND='" +
+                FormatGitSSHCommand (auth_info) + "' ";
+        }
+
+
+        /// <summary>
+        /// True when this repo already has Git LFS filter entries (e.g. from an earlier clone).
+        /// </summary>
+        public static bool LfsFilterIsConfigured (string working_dir)
+        {
+            var git_config = new GitCommand (working_dir, "config --get filter.lfs.smudge");
+            git_config.StartAndWaitForExit ();
+            return git_config.ExitCode == 0;
+        }
+
+
+        /// <summary>
+        /// Writes filter.lfs.* in the repo so LFS smudge uses the SparkleShare SSH key (not ssh-agent).
+        /// Safe to call on every repo load; keeps .git/config in sync with FormatGitSSHCommand changes.
+        /// </summary>
+        public static void ConfigureLfsFilter (string working_dir, SSHAuthenticationInfo auth_info)
+        {
+            string smudge_command;
+            string clean_command;
+
+            if (InstallationInfo.OperatingSystem == OS.macOS || InstallationInfo.OperatingSystem == OS.Windows) {
+                smudge_command = FormatGitSSHEnvPrefix (auth_info) +
+                    Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/") + " smudge %f";
+
+                clean_command = Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/") + " clean %f";
+
+            } else {
+                smudge_command = FormatGitSSHEnvPrefix (auth_info) + "git-lfs smudge %f";
+                clean_command = "git-lfs clean %f";
+            }
+
+            var git_config_required = new GitCommand (working_dir, "config filter.lfs.required true");
+            var git_config_clean = new GitCommand (working_dir,
+                string.Format ("config filter.lfs.clean '{0}'", clean_command));
+            var git_config_smudge = new GitCommand (working_dir,
+                string.Format ("config filter.lfs.smudge \"{0}\"", smudge_command));
+
+            git_config_required.StartAndWaitForExit ();
+            git_config_clean.StartAndWaitForExit ();
+            git_config_smudge.StartAndWaitForExit ();
+        }
+
+
+        void DisableSSHAgentEnvironment ()
+        {
+            RemoveEnvironmentVariable ("SSH_AUTH_SOCK");
+            RemoveEnvironmentVariable ("SSH_AGENT_PID");
         }
     }
 }
