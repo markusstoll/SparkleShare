@@ -92,4 +92,16 @@
     <None Remove="SparkleShareInviteOpener.app\**" />
   </ItemGroup>
 
+  <!-- After the macOS workload finishes the .app bundle, unpack bundled git (see postBuild.sh + checkGit.sh). -->
+  <Target Name="SparkleSharePostBuildBundle"
+          AfterTargets="_PostProcessAppBundle"
+          Condition="'$(_CanOutputAppBundle)' == 'true' And '$(DesignTimeBuild)' != 'true' And Exists('$(MSBuildProjectDirectory)/postBuild.sh')">
+    <PropertyGroup>
+      <_SparkleShareAppBundlePath>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_AppBundlePath)'))))</_SparkleShareAppBundlePath>
+    </PropertyGroup>
+    <Message Importance="High" Text="SparkleSharePostBuildBundle: $(_SparkleShareAppBundlePath)" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          Command="sh &quot;$(MSBuildProjectDirectory)/postBuild.sh&quot; &quot;$(_SparkleShareAppBundlePath)&quot;" />
+  </Target>
+
 </Project>
