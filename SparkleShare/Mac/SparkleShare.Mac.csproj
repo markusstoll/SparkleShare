@@ -8,8 +8,8 @@
     <AssemblyName>SparkleShare</AssemblyName>
     <ApplicationId>org.sparkleshare.SparkleShare</ApplicationId>
     <ApplicationTitle>SparkleShare</ApplicationTitle>
-    <ApplicationVersion>4.0.0</ApplicationVersion>
-    <ApplicationDisplayVersion>4.00-beta</ApplicationDisplayVersion>
+    <ApplicationVersion>4.0.1</ApplicationVersion>
+    <ApplicationDisplayVersion>4.0.1-beta</ApplicationDisplayVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
