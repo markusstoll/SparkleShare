@@ -364,6 +364,21 @@ namespace Sparkles {
         }
 
 
+        // One-shot pull (fetch + merge) like the periodic poll when remote changes exist,
+        // but without requiring HasRemoteChanges — runs on a worker thread.
+        public void ForcePull ()
+        {
+            new Thread (() => {
+                if (Status == SyncStatus.Paused || this.is_syncing || IsBuffering)
+                    return;
+
+                Logger.LogInfo ("SyncDown", Name + " | Force pull requested");
+                this.last_poll = DateTime.Now;
+                SyncDownBase ();
+            }).Start ();
+        }
+
+
         protected void OnConflictResolved ()
         {
             ConflictResolved ();

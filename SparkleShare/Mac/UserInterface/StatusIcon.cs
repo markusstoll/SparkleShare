@@ -34,7 +34,7 @@ namespace SparkleShare {
         private NSMenuItem state_item, folder_item, add_item, about_item, recent_events_item, quit_item,
             code_item, copy_item, link_code_item;
 
-        private NSMenuItem [] folder_menu_items, try_again_menu_items, pause_menu_items,
+        private NSMenuItem [] folder_menu_items, try_again_menu_items, force_pull_menu_items, pause_menu_items,
             resume_menu_items, state_menu_items;
 
         private NSImage syncing_idle_image  = NSImage.ImageNamed ("process-syncing-idle");
@@ -157,11 +157,12 @@ namespace SparkleShare {
                 Enabled = Controller.QuitItemEnabled
             };
 
-            this.folder_menu_items    = new NSMenuItem [Controller.Projects.Length];
-            this.try_again_menu_items = new NSMenuItem [Controller.Projects.Length];
-            this.pause_menu_items     = new NSMenuItem [Controller.Projects.Length];
-            this.resume_menu_items    = new NSMenuItem [Controller.Projects.Length];
-            this.state_menu_items     = new NSMenuItem [Controller.Projects.Length];
+            this.folder_menu_items      = new NSMenuItem [Controller.Projects.Length];
+            this.try_again_menu_items   = new NSMenuItem [Controller.Projects.Length];
+            this.force_pull_menu_items  = new NSMenuItem [Controller.Projects.Length];
+            this.pause_menu_items       = new NSMenuItem [Controller.Projects.Length];
+            this.resume_menu_items      = new NSMenuItem [Controller.Projects.Length];
+            this.state_menu_items       = new NSMenuItem [Controller.Projects.Length];
 
             if (Controller.Projects.Length > 0) {
                 int i = 0;
@@ -208,6 +209,10 @@ namespace SparkleShare {
                             item.Submenu.AddItem (this.try_again_menu_items [i]);
                             
                         } else {
+                            this.force_pull_menu_items [i] = new NSMenuItem ("Force Pull");
+                            this.force_pull_menu_items [i].Activated += Controller.ForcePullDelegate (project.Name);
+                            item.Submenu.AddItem (this.force_pull_menu_items [i]);
+
                             this.pause_menu_items [i] = new NSMenuItem ("Pause"); 
                             this.pause_menu_items [i].Activated += Controller.PauseDelegate (project.Name);
 

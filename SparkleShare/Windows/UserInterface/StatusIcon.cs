@@ -290,6 +290,13 @@ namespace SparkleShare {
                             subfolder_item.Items.Add(try_again_item);
 
                         } else {
+                            SparkleMenuItem force_pull_item = new SparkleMenuItem {
+                                Header = "Force Pull"
+                            };
+                            force_pull_item.Click +=
+                                (sender, e) => Controller.ForcePullDelegate(project.Name)(sender, e);
+                            subfolder_item.Items.Add(force_pull_item);
+
                             SparkleMenuItem pause_item = new SparkleMenuItem {
                                 Header = "Pause"
                             };

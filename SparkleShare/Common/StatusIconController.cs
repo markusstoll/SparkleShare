@@ -361,6 +361,12 @@ namespace SparkleShare {
         }
 
 
+        public void ForcePullClicked (string project)
+        {
+            SparkleShare.Controller.GetRepoByName (project).ForcePull ();
+        }
+
+
         // Helper delegates
         public EventHandler OpenFolderDelegate (string project)
         {
@@ -370,6 +376,11 @@ namespace SparkleShare {
         public EventHandler TryAgainDelegate (string project)
         {
             return delegate { TryAgainClicked (project); };
+        }
+
+        public EventHandler ForcePullDelegate (string project)
+        {
+            return delegate { ForcePullClicked (project); };
         }
         
         public EventHandler PauseDelegate (string project)

@@ -199,6 +199,10 @@ namespace SparkleShare {
                             (item.Submenu as Menu).Add (try_again_item);
 
                         } else {
+                            MenuItem force_pull_item = new MenuItem ("Force Pull");
+                            force_pull_item.Activated += Controller.ForcePullDelegate (project.Name);
+                            (item.Submenu as Menu).Add (force_pull_item);
+
                             MenuItem pause_item = new MenuItem ("Pause");
                             pause_item.Activated += Controller.PauseDelegate (project.Name);
                             (item.Submenu as Menu).Add (pause_item);
