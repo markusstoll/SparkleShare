@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 using Foundation;
@@ -41,6 +42,13 @@ namespace SparkleShare {
             : base (config)
         {
             NSApplication.Init ();
+
+            // Use macOS Launch Services for duplicate-instance detection instead of the
+            // cross-platform PID file: it is race-free, survives crashes, and avoids PID
+            // reuse issues. The override is installed before SingleInstance.TryAcquire()
+            // is called from Main.
+            SingleInstance.CheckGuard = MacOSAnotherInstanceIsRunning;
+            SingleInstance.ReleaseGuard = () => { /* Launch Services reclaims on process exit. */ };
 
             string bundled_git_path = Path.Combine (NSBundle.MainBundle.ResourcePath, "git", "libexec", "git-core", "git");
             string bundled_exec_path = Path.Combine (NSBundle.MainBundle.ResourcePath, "git", "libexec", "git-core");
@@ -247,5 +255,31 @@ namespace SparkleShare {
             NSRunningApplication.CurrentApplication.Terminate ();
         }
 
+
+        // Determines whether another process with the same bundle identifier already
+        // runs. To avoid the "both exit" race when two instances start near
+        // simultaneously, the survivor is the one with the lowest PID.
+        static bool MacOSAnotherInstanceIsRunning ()
+        {
+            string bundle_id = NSBundle.MainBundle.BundleIdentifier ?? "org.sparkleshare.SparkleShare";
+            NSRunningApplication [] instances = NSRunningApplication.GetRunningApplications (bundle_id);
+            int own_pid = Environment.ProcessId;
+
+            var other = instances
+                .Where (a => a.ProcessIdentifier > 0 && a.ProcessIdentifier != own_pid)
+                .OrderBy (a => a.ProcessIdentifier)
+                .FirstOrDefault ();
+
+            if (other == null)
+                return false;
+
+            if (other.ProcessIdentifier < own_pid) {
+                Logger.LogInfo ("SingleInstance",
+                    "Another SparkleShare instance is running (PID " + other.ProcessIdentifier + "); exiting.");
+                return true;
+            }
+
+            return false;
+        }
     }
 }

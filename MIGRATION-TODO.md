@@ -57,6 +57,7 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 - [x] Replace deprecated `WebView` with `WKWebView`
 - [x] Reduce obsolete .NET/AppKit warnings where APIs have direct modern replacements
 - [x] Address remaining AppKit deprecations (`NSWindow`, `NSBox`, `NSSavePanel`, `NSAttributedString`) — build is now warning-free
+- [x] Prevent duplicate instances (macOS: `NSRunningApplication`; fallback: PID file in config dir)
 
 ### Still open (Phase 1)
 

@@ -16,7 +16,6 @@
 
 
 using System;
-using System.Threading;
 
 using Sparkles;
 
@@ -27,23 +26,24 @@ namespace SparkleShare {
         public static Controller Controller;
         public static UserInterface UI;
 
-        static Mutex program_mutex = new Mutex (false, "SparkleShare");
-        
-     
+
         #if !__MonoCS__
         [STAThread]
         #endif
         public static void Main (string [] args)
         {
-            // Only allow one instance of SparkleShare (on Windows)
-            if (!program_mutex.WaitOne (0, exitContext: false)) {
-                Console.WriteLine ("SparkleShare is already running.");
-                Environment.Exit (-1);
-            }
-
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
+            // The platform-specific Controller constructor swaps in a native guard
+            // (e.g. NSRunningApplication on macOS). Until that runs, SingleInstance
+            // uses its default PID-file implementation.
             Controller = new Controller (Configuration.DefaultConfiguration);
+
+            if (!SingleInstance.TryAcquire ()) {
+                Console.Error.WriteLine ("SparkleShare is already running; exiting silently.");
+                Environment.Exit (0);
+            }
+
             Controller.Initialize ();
 
             UI = new UserInterface ();
