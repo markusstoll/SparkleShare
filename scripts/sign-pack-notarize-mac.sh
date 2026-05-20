@@ -8,11 +8,14 @@
 #     --team-id "YOUR_TEAM_ID" \
 #     --password "xxxx-xxxx-xxxx-xxxx"
 #
-# Build first:
-#   CONFIG=Release scripts/build-mac.sh
+# Build first (pick architecture — separate DMGs for Apple Silicon and Intel):
+#   CONFIG=Release RID=osx-arm64 scripts/build-mac.sh
+#   RID=osx-arm64 scripts/sign-pack-notarize-mac.sh
+#   CONFIG=Release RID=osx-x64 scripts/build-mac.sh
+#   RID=osx-x64 scripts/sign-pack-notarize-mac.sh
 #
-# Then (after configuring credentials — see below):
-#   scripts/sign-pack-notarize-mac.sh
+# Or both in one go (after configuring credentials):
+#   scripts/release-mac-dmgs.sh
 #
 # Credentials (pick one):
 #   1. Copy scripts/sign-pack-notarize-mac.local.sh.example to
@@ -49,6 +52,24 @@ case "$HOST_ARCH" in
     *)      HOST_RID=""          ;;
 esac
 EFFECTIVE_RID="${RID:-$HOST_RID}"
+
+# Short label for dist paths and DMG file names (arm64 | x64).
+arch_label_from_rid() {
+    case "$1" in
+        osx-arm64) echo "arm64" ;;
+        osx-x64)   echo "x64" ;;
+        *)
+            case "$(uname -m)" in
+                arm64|aarch64) echo "arm64" ;;
+                x86_64) echo "x64" ;;
+                *) echo "unknown" ;;
+            esac
+            ;;
+    esac
+}
+
+ARCH_LABEL="$(arch_label_from_rid "$EFFECTIVE_RID")"
+[ "$ARCH_LABEL" != "unknown" ] || die "Set RID=osx-arm64 or RID=osx-x64 (host arch could not be inferred)."
 
 die() {
     echo "error: $*" >&2
@@ -261,16 +282,17 @@ verify_dmg_mounts() {
 main() {
     require_config
 
-    APP_PATH="$(resolve_app_bundle_path "$CONFIG")" || die "No complete SparkleShare.app found under $MAC_DIR/bin/$CONFIG/net10.0-macos/\nRun: CONFIG=Release scripts/build-mac.sh"
+    APP_PATH="$(resolve_app_bundle_path "$CONFIG")" || die "No complete SparkleShare.app found for RID=${EFFECTIVE_RID:-<default>} under $MAC_DIR/bin/$CONFIG/net10.0-macos/\nRun: CONFIG=Release RID=${EFFECTIVE_RID:-osx-arm64} scripts/build-mac.sh"
 
     VERSION="$(read_version)"
-    DMG_NAME="SparkleShare_${VERSION}.dmg"
+    DMG_NAME="SparkleShare_${VERSION}_${ARCH_LABEL}.dmg"
     DMG_PATH="$DIST_DIR/$DMG_NAME"
-    DIST_APP="$DIST_DIR/SparkleShare.app"
+    DIST_APP="$DIST_DIR/$ARCH_LABEL/SparkleShare.app"
 
-    mkdir -p "$DIST_DIR"
+    mkdir -p "$DIST_DIR/$ARCH_LABEL"
 
     echo "Build output:  $APP_PATH"
+    echo "Architecture:  $ARCH_LABEL (RID: ${EFFECTIVE_RID:-<default>})"
     echo "Dist app:      $DIST_APP"
     echo "Version:       $VERSION"
     echo "Release DMG:   $DMG_PATH"

@@ -3,3 +3,9 @@
 
 SIGNING_IDENTITY='Developer ID Application: Your Name (TEAMID)'
 NOTARY_KEYCHAIN_PROFILE='your-notarytool-profile'
+
+# Build + notarize one architecture:
+#   CONFIG=Release RID=osx-arm64 scripts/build-mac.sh
+#   RID=osx-arm64 scripts/sign-pack-notarize-mac.sh
+#
+# Both DMGs: scripts/release-mac-dmgs.sh

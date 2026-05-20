@@ -1,1 +1,3 @@
-https://github.com/desktop/dugite-native/releases/download/v2.53.0-3/dugite-native-v2.53.0-f49d009-macOS-arm64.tar.gz e561cfc80c755e6f3e938653e81efcd025c9827a5b76dd42778b1159b3fab437
+# dugite-native v2.53.0-3 — one line per macOS architecture: ARCH URL SHA256
+arm64 https://github.com/desktop/dugite-native/releases/download/v2.53.0-3/dugite-native-v2.53.0-f49d009-macOS-arm64.tar.gz e561cfc80c755e6f3e938653e81efcd025c9827a5b76dd42778b1159b3fab437
+x64 https://github.com/desktop/dugite-native/releases/download/v2.53.0-3/dugite-native-v2.53.0-f49d009-macOS-x64.tar.gz caf27c36b8834969550535bcd5e58186f970e080d1e175e76d9c1de3aac409ed

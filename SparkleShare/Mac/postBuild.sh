@@ -8,7 +8,7 @@ echo Postprocessing ${bundle}...
 
 export PATH=/usr/local/bin:/opt/local/bin:/Library/Frameworks/Mono.framework/Versions/Current/bin:/usr/bin:/bin
 
-${projectFolder}/checkGit.sh
+${projectFolder}/checkGit.sh "${2:-}"
 rm -rf ${bundle}/Contents/Resources/git
 mkdir -p ${bundle}/Contents/Resources/git
 tar -x -f ${projectFolder}/git.tar.gz --directory ${bundle}/Contents/Resources/git

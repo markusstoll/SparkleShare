@@ -14,6 +14,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <!-- macOS SDK requires PublishTrimmed (Release); use self-contained builds (see scripts/build-mac.sh). -->
+    <LinkMode>None</LinkMode>
     <!-- Required for .NET 10 macOS SDK when Xcode is not auto-detected -->
     <XcodeLocation Condition="'$(XcodeLocation)' == ''">/Applications/Xcode.app</XcodeLocation>
   </PropertyGroup>
@@ -95,7 +97,7 @@
     </PropertyGroup>
     <Message Importance="High" Text="SparkleSharePostBuildBundle: $(_SparkleShareAppBundlePath)" />
     <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
-          Command="sh &quot;$(MSBuildProjectDirectory)/postBuild.sh&quot; &quot;$(_SparkleShareAppBundlePath)&quot;" />
+          Command="sh &quot;$(MSBuildProjectDirectory)/postBuild.sh&quot; &quot;$(_SparkleShareAppBundlePath)&quot; &quot;$(RuntimeIdentifier)&quot;" />
   </Target>
 
 </Project>

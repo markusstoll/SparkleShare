@@ -58,7 +58,7 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 - [x] Reduce obsolete .NET/AppKit warnings where APIs have direct modern replacements
 - [x] Address remaining AppKit deprecations (`NSWindow`, `NSBox`, `NSSavePanel`, `NSAttributedString`) — build is now warning-free
 - [x] Prevent duplicate instances (macOS: `NSRunningApplication`; fallback: PID file in config dir)
-- [x] Bundle git + LFS in app resources (`postBuild.sh` + `checkGit.sh` / Dugite via `git.download`; `git-lfs` copied to `~/SparkleShare/bin` at startup — arm64 only in `git.download`; optional: Intel tarball + LFS sync QA in release DMG)
+- [x] Bundle git + LFS in app resources (`postBuild.sh` + `checkGit.sh` / Dugite arm64+x64 in `git.download`; per-arch DMGs via `RID=osx-arm64|osx-x64` and `scripts/release-mac-dmgs.sh`)
 - [x] Codesign + notarization pipeline (`scripts/sign-pack-notarize-mac.sh` + `sign-pack-notarize-mac.local.sh.example`; Release DMG with Applications link, `notarytool`, staple DMG)
 
 ### Still open (Phase 1)
