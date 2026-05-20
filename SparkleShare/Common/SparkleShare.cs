@@ -33,6 +33,7 @@ namespace SparkleShare {
         public static void Main (string [] args)
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            InstallationInfo.SetHostAssembly (typeof (SparkleShare).Assembly);
 
             // The platform-specific Controller constructor swaps in a native guard
             // (e.g. NSRunningApplication on macOS). Until that runs, SingleInstance

@@ -70,9 +70,13 @@ namespace SparkleShare {
                     string latest_version = response.Content.ReadAsStringAsync ().GetAwaiter ().GetResult ();
                     latest_version = latest_version.Trim ();
 
-                    if (new Version (latest_version) > new Version (RunningVersion))
-                        UpdateLabelEvent ("An update (version " + latest_version + ") is available!");
-                    else
+                    if (TryParseReleaseVersion (latest_version, out Version latest)
+                        && TryParseReleaseVersion (RunningVersion, out Version current)) {
+                        if (latest > current)
+                            UpdateLabelEvent ("An update (version " + latest_version + ") is available!");
+                        else
+                            UpdateLabelEvent ("✓ You are running the latest version");
+                    } else
                         UpdateLabelEvent ("✓ You are running the latest version");
                 }
 
@@ -80,6 +84,25 @@ namespace SparkleShare {
                 Logger.LogInfo ("UI", "Failed to download " + uri , e);
                 UpdateLabelEvent ("Couldn’t check for updates\t");
             }
+        }
+
+
+        /// <summary>
+        /// Parses a dotted version for update checks, ignoring SemVer pre-release (after '-') and build metadata (after '+').
+        /// </summary>
+        static bool TryParseReleaseVersion (string text, out Version version)
+        {
+            version = null;
+            if (string.IsNullOrWhiteSpace (text))
+                return false;
+            text = text.Trim ();
+            int cut = text.IndexOf ('-');
+            if (cut >= 0)
+                text = text.Substring (0, cut).Trim ();
+            int plus = text.IndexOf ('+');
+            if (plus >= 0)
+                text = text.Substring (0, plus).Trim ();
+            return Version.TryParse (text, out version);
         }
     }
 }

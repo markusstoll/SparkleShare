@@ -109,10 +109,57 @@ namespace Sparkles {
         }
 
 
+        static Assembly host_assembly;
+
+
+        /// <summary>
+        /// Registers the UI entry assembly (SparkleShare.dll). Call from <c>Main</c> before any code
+        /// reads <see cref="Version"/>. Required on macOS where <see cref="Assembly.GetEntryAssembly"/>
+        /// is often null (native apphost) and where guessing by assembly simple name is unreliable.
+        /// </summary>
+        public static void SetHostAssembly (Assembly assembly)
+        {
+            host_assembly = assembly;
+        }
+
+
+        /// <summary>
+        /// Returns the platform head assembly when known or discoverable.
+        /// </summary>
+        static Assembly TryGetHostAssembly ()
+        {
+            if (host_assembly != null)
+                return host_assembly;
+
+            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies ()) {
+                try {
+                    if (string.Equals (a.GetName ().Name, "SparkleShare", StringComparison.Ordinal))
+                        return a;
+                } catch {
+                    // Some reflection-only or dynamic assemblies throw on GetName().
+                }
+            }
+
+            return Assembly.GetEntryAssembly () ?? Assembly.GetExecutingAssembly ();
+        }
+
+
         public static string Version {
             get {
-                string version = "" + Assembly.GetExecutingAssembly ().GetName ().Version;
-                return version.Substring (0, version.Length - 2);
+                Assembly asm = TryGetHostAssembly ();
+                var informational = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute> ();
+                string info = informational?.InformationalVersion;
+                if (!string.IsNullOrWhiteSpace (info)) {
+                    int plus = info.IndexOf ('+');
+                    if (plus >= 0)
+                        info = info.Substring (0, plus);
+                    return info.Trim ();
+                }
+
+                string version = "" + asm.GetName ().Version;
+                if (version.Length >= 2)
+                    return version.Substring (0, version.Length - 2);
+                return version;
             }
         }
 
