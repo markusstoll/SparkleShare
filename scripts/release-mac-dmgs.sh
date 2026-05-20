@@ -12,8 +12,12 @@ cd "$ROOT"
 export CONFIG=Release
 export MD_APPLE_SDK_ROOT="${MD_APPLE_SDK_ROOT:-/Applications/Xcode.app}"
 
+MAC_BIN="SparkleShare/Mac/bin/Release/net10.0-macos"
+
 for RID in osx-arm64 osx-x64; do
     echo "========== $RID =========="
+    # Full clean per architecture so version/plist and CPU type cannot leak across DMGs.
+    rm -rf "$ROOT/$MAC_BIN"
     RID="$RID" "$SCRIPT_DIR/build-mac.sh"
     RID="$RID" "$SCRIPT_DIR/sign-pack-notarize-mac.sh"
     echo

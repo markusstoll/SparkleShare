@@ -102,10 +102,17 @@ resolve_app_bundle_path() {
     local tried=()
     local app
 
-    if [ -n "$EFFECTIVE_RID" ]; then
+    # When RID is set, only use the RID-specific bundle. The shared
+    # net10.0-macos/SparkleShare.app is often left from the previous arch build
+    # (wrong CPU type and stale Info.plist).
+    if [ -n "$RID" ]; then
         tried+=("$base/$EFFECTIVE_RID/SparkleShare.app")
+    else
+        if [ -n "$EFFECTIVE_RID" ]; then
+            tried+=("$base/$EFFECTIVE_RID/SparkleShare.app")
+        fi
+        tried+=("$base/SparkleShare.app")
     fi
-    tried+=("$base/SparkleShare.app")
 
     for app in "${tried[@]}"; do
         if app_bundle_is_complete "$app"; then
@@ -119,6 +126,29 @@ resolve_app_bundle_path() {
         echo "  $app" >&2
     done
     return 1
+}
+
+
+verify_app_bundle_architecture() {
+    local app="$1"
+    local bin="$app/Contents/MacOS/SparkleShare"
+
+    [ -f "$bin" ] || die "Missing executable: $bin"
+    command -v lipo >/dev/null 2>&1 || return 0
+
+    local archs
+    archs="$(lipo -archs "$bin" 2>/dev/null | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+
+    case "$ARCH_LABEL" in
+        arm64)
+            echo "$archs" | grep -q 'arm64' || die "Expected arm64 binary, got: $archs (wrong .app bundle — rebuild with RID=osx-arm64)"
+            ;;
+        x64)
+            echo "$archs" | grep -q 'x86_64' || die "Expected x86_64 binary, got: $archs (wrong .app bundle — rebuild with RID=osx-x64)"
+            ;;
+    esac
+
+    echo "Binary architecture: $archs"
 }
 
 verify_app_bundle() {
@@ -240,10 +270,28 @@ prepare_dist_app() {
     ditto "$build_app" "$dist_app"
 }
 
+# hdiutil fails with "Resource busy" when /Volumes/SparkleShare is still mounted
+# from a previous open/test — not because the output .dmg file exists.
+detach_sparkleshare_volumes() {
+    local vol
+
+    for vol in /Volumes/SparkleShare*; do
+        [ -e "$vol" ] || continue
+        echo "Unmounting $vol…"
+        hdiutil detach "$vol" -force -quiet 2>/dev/null \
+            || diskutil unmount force "$vol" >/dev/null 2>&1 \
+            || true
+    done
+}
+
+
 create_dmg() {
     local app="$1"
     local dmg_path="$2"
     local staging
+    local volname="SparkleShare-${ARCH_LABEL}"
+
+    detach_sparkleshare_volumes
 
     staging="$(mktemp -d)"
 
@@ -253,7 +301,7 @@ create_dmg() {
 
     rm -f "$dmg_path"
     hdiutil create \
-        -volname "SparkleShare" \
+        -volname "$volname" \
         -srcfolder "$staging" \
         -ov \
         -format UDZO \
@@ -299,6 +347,14 @@ main() {
     echo
 
     verify_app_bundle "$APP_PATH"
+    verify_app_bundle_architecture "$APP_PATH"
+
+    local plist_version=""
+    plist_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
+        "$APP_PATH/Contents/Info.plist" 2>/dev/null || true)"
+    if [ -n "$plist_version" ]; then
+        echo "App bundle version: $plist_version"
+    fi
 
     echo "Copying app bundle to dist/ (keeps bin/Release rebuildable)…"
     prepare_dist_app "$APP_PATH" "$DIST_APP"
@@ -344,7 +400,11 @@ main() {
     echo
     echo "Optional Gatekeeper check after mount:"
     echo "  open \"$DMG_PATH\""
-    echo "  spctl -a -t exec -vv /Volumes/SparkleShare/SparkleShare.app"
+    echo "  spctl -a -t exec -vv \"/Volumes/SparkleShare-${ARCH_LABEL}/SparkleShare.app\""
+    echo
+    echo "If hdiutil reports 'Resource busy', unmount stale volumes:"
+    echo "  hdiutil detach /Volumes/SparkleShare-${ARCH_LABEL} -force"
+    echo "  # or: ls /Volumes/SparkleShare*"
 }
 
 main "$@"

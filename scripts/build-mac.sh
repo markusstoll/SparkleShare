@@ -34,6 +34,20 @@ if [ "$CONFIG" = "Release" ]; then
     SELF_CONTAINED=true
 fi
 
+MAC_BIN="SparkleShare/Mac/bin/${CONFIG}/net10.0-macos"
+EFFECTIVE_RID="${RID:-$HOST_RID}"
+
+# Avoid picking up a stale shared .app or the other architecture's output.
+if [ -n "$RID" ]; then
+    rm -rf "$MAC_BIN/SparkleShare.app"
+    if [ "$EFFECTIVE_RID" = "osx-arm64" ]; then
+        rm -rf "$MAC_BIN/osx-x64"
+    elif [ "$EFFECTIVE_RID" = "osx-x64" ]; then
+        rm -rf "$MAC_BIN/osx-arm64"
+    fi
+    rm -rf "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
+fi
+
 if [ -n "$RID" ]; then
     "$DOTNET" build SparkleShare/Mac/SparkleShare.Mac.csproj \
         -c "$CONFIG" -r "$RID" --self-contained "$SELF_CONTAINED" "$@"
@@ -41,17 +55,21 @@ else
     "$DOTNET" build SparkleShare/Mac/SparkleShare.Mac.csproj -c "$CONFIG" "$@"
 fi
 
-EFFECTIVE_RID="${RID:-$HOST_RID}"
-MAC_BIN="SparkleShare/Mac/bin/${CONFIG}/net10.0-macos"
 APP_PATH=""
-if [ -n "$EFFECTIVE_RID" ] && [ -f "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app/Contents/Resources/MainMenu.nib" ]; then
-    APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
-elif [ -f "$MAC_BIN/SparkleShare.app/Contents/Resources/MainMenu.nib" ]; then
-    APP_PATH="$MAC_BIN/SparkleShare.app"
-elif [ -n "$EFFECTIVE_RID" ] && [ -d "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app" ]; then
-    APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
-elif [ -d "$MAC_BIN/SparkleShare.app" ]; then
-    APP_PATH="$MAC_BIN/SparkleShare.app"
+if [ -n "$RID" ]; then
+    if [ -d "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app" ]; then
+        APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
+    fi
+else
+    if [ -n "$EFFECTIVE_RID" ] && [ -f "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app/Contents/Resources/MainMenu.nib" ]; then
+        APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
+    elif [ -f "$MAC_BIN/SparkleShare.app/Contents/Resources/MainMenu.nib" ]; then
+        APP_PATH="$MAC_BIN/SparkleShare.app"
+    elif [ -n "$EFFECTIVE_RID" ] && [ -d "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app" ]; then
+        APP_PATH="$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
+    elif [ -d "$MAC_BIN/SparkleShare.app" ]; then
+        APP_PATH="$MAC_BIN/SparkleShare.app"
+    fi
 fi
 
 if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
@@ -64,9 +82,13 @@ if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
     fi
     if [ ! -f "$APP_PATH/Contents/Resources/MainMenu.nib" ]; then
         echo
-        echo "Warning: bundle looks incomplete (missing MainMenu.nib). Prefer:"
-        echo "  $MAC_BIN/SparkleShare.app"
-        echo "Run a clean Release build if signing fails."
+        echo "Warning: bundle looks incomplete (missing MainMenu.nib)."
+        echo "Run: CONFIG=Release RID=$EFFECTIVE_RID scripts/build-mac.sh"
+    fi
+    if [ -f "$APP_PATH/Contents/Info.plist" ]; then
+        echo -n "  Bundle version: "
+        /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
+            "$APP_PATH/Contents/Info.plist" 2>/dev/null || echo "?"
     fi
     GIT_BIN="$APP_PATH/Contents/Resources/git/bin/git"
     if [ -x "$GIT_BIN" ]; then
