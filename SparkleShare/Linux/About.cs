@@ -109,21 +109,15 @@ namespace SparkleShare {
                 Xalign = 0, Xpad = 0
             };
 
-            var copyright = new Label {
-                Markup = string.Format ("Copyright © 2010–{0} Hylke Bons and others", DateTime.Now.Year),
-                Xalign = 0, Xpad = 0
+            var credits = new Label (AboutController.CreditsParagraph) {
+                Xalign = 0, Xpad = 0,
+                LineWrap = true,
+                MaxWidthChars = 42
             };
 
-            var license = new Label ("SparkleShare is Open Source and you’re free to\n" +
-                "use, change, and share it under the GNU GPLv3") {
-
-                Xalign = 0, Xpad = 0
-            };
-
-            license.StyleContext.AddProvider (label_css_provider, 800);
+            credits.StyleContext.AddProvider (label_css_provider, 800);
             updates.StyleContext.AddProvider (label_highlight_css_provider, 800);
             version.StyleContext.AddProvider (label_css_provider, 800);
-            copyright.StyleContext.AddProvider (label_css_provider, 800);
 
             var website_link        = new Link ("Website", Controller.WebsiteLinkAddress);
             var credits_link        = new Link ("Credits", Controller.CreditsLinkAddress);
@@ -133,8 +127,7 @@ namespace SparkleShare {
             layout_vertical.PackStart (new Label (""), true, true, 0);
             layout_vertical.PackStart (version, false, false, 0);
             layout_vertical.PackStart (updates, false, false, 0);
-            layout_vertical.PackStart (copyright, false, false, 6);
-            layout_vertical.PackStart (license, false, false, 6);
+            layout_vertical.PackStart (credits, false, false, 6);
             layout_vertical.PackStart (links_layout, false, false, 6);
 
             links_layout.PackStart (website_link, false, false, 0);

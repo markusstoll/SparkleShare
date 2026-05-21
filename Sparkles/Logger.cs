@@ -78,7 +78,8 @@ namespace Sparkles {
                 "Oops! SparkleShare has crashed... :(" + n +
                 n +
                 "If you want to help fix this crash, please report it at " + n +
-                "https://github.com/hbons/SparkleShare/issues and include the lines below." + n +
+                "https://github.com/markusstoll/SparkleShare/issues and include the lines below." + n +
+                "(SparkleShare was created by Hylke Bons — https://github.com/hbons/SparkleShare)" + n +
                 n +
                 "Remove any sensitive information like file names, IP addresses, domain names, etc. if needed." + n +
                 n +

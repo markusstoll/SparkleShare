@@ -1,7 +1,12 @@
 # [SparkleShare](https://www.sparkleshare.org/)
 
+SparkleShare was **created by [Hylke Bons](https://github.com/hbons)**. Most of the design, code, and years of maintenance are his work. This repository is a **community continuation** maintained by [Markus Stoll](https://github.com/markusstoll) after the [original project](https://github.com/hbons/SparkleShare) was discontinued — same name, same spirit, with a modernized macOS stack (4.x) and ongoing fixes.
+
+**macOS builds (4.x):** [Releases on markusstoll/SparkleShare](https://github.com/markusstoll/SparkleShare/releases)  
+**Original project & history:** [hbons/SparkleShare](https://github.com/hbons/SparkleShare) · [sparkleshare.org](https://www.sparkleshare.org/)
+
 > [!NOTE]
-> Please read 🌱 [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of this project.
+> The upstream repository is archived. For current macOS previews and migration work, use this fork. For the story behind the original project, see 🌱 [issue #2006](https://github.com/hbons/SparkleShare/issues/2006).
 
 > [!IMPORTANT]
 > Hello! Hylke here. I was recently <a href="https://www.theguardian.com/technology/2025/may/13/microsoft-layoffs" target="_blank">laid off</a>. I'd love to work full-time creating **apps for Linux** and contributing **design for FOSS projects**. I hope to gather enough [monthly sponsors](https://github.com/sponsors/hbons) for a minimum wage. Every little helps. Thank you.
@@ -12,7 +17,7 @@
 
 ![Banner](https://raw.githubusercontent.com/hbons/SparkleShare/master/SparkleShare/Common/Images/readme-banner.png)
 
-You can support this project through [💕 GitHub Sponsors](https://github.com/sponsors/hbons).
+You can support **Hylke Bons**, the creator of SparkleShare, through [💕 GitHub Sponsors](https://github.com/sponsors/hbons).
 
 ## How does it work?
 
@@ -34,7 +39,7 @@ Now you can run SparkleShare from the apps menu.
 
 ## Install on macOS
 
-Download the app from the [releases page](https://github.com/hbons/SparkleShare/releases).
+Download signed, notarized builds from the [releases page](https://github.com/markusstoll/SparkleShare/releases) (arm64 and Intel DMGs for 4.x previews). Building from source: see [SparkleShare/Mac/README.md](SparkleShare/Mac/README.md).
 
 
 ## Set up a host
@@ -48,13 +53,12 @@ Under the hood SparkleShare uses the version control system [Git](https://git-sc
 Here are instructions to build SparkleShare on [Linux distributions](SparkleShare/Linux/README.md), [macOS](SparkleShare/Mac/README.md), and [Windows](SparkleShare/Windows/README.md).
 
 
-[![Build Status](https://travis-ci.org/hbons/SparkleShare.svg?branch=master)](https://travis-ci.org/hbons/SparkleShare)
-
 ## Useful links
-- [sparkleshare.org](https://www.sparkleshare.org/)
+- [sparkleshare.org](https://www.sparkleshare.org/) — original product site (Hylke Bons)
+- [hbons/SparkleShare](https://github.com/hbons/SparkleShare) — original source & AUTHORS
+- [markusstoll/SparkleShare](https://github.com/markusstoll/SparkleShare) — maintained fork, issues & releases
 - [@hbons on Mastodon](https://mastodon.social/@hbons)
 - [Wiki](https://www.github.com/hbons/SparkleShare/wiki)
 
 
 Have fun, make awesome. :)
-

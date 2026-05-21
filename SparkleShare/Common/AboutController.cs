@@ -31,10 +31,23 @@ namespace SparkleShare {
         public event UpdateLabelEventDelegate UpdateLabelEvent = delegate { };
         public delegate void UpdateLabelEventDelegate (string text);
 
-        public readonly string WebsiteLinkAddress       = "https://www.sparkleshare.org/";
-        public readonly string CreditsLinkAddress       = "https://github.com/hbons/SparkleShare/blob/master/.github/AUTHORS.md";
-        public readonly string ReportProblemLinkAddress = "https://www.github.com/hbons/SparkleShare/issues";
-        public readonly string DebugLogLinkAddress      = "file://" + SparkleShare.Controller.Config.LogFilePath;
+        public readonly string WebsiteLinkAddress          = "https://www.sparkleshare.org/";
+        public readonly string OriginalProjectLinkAddress  = "https://github.com/hbons/SparkleShare";
+        public readonly string CreditsLinkAddress          = "https://github.com/hbons/SparkleShare/blob/master/.github/AUTHORS.md";
+        public readonly string ReleasesLinkAddress         = "https://github.com/markusstoll/SparkleShare/releases";
+        public readonly string ReportProblemLinkAddress    = "https://github.com/markusstoll/SparkleShare/issues";
+        public readonly string DebugLogLinkAddress         = "file://" + SparkleShare.Controller.Config.LogFilePath;
+
+        /// <summary>Shown in the About dialog; keep Hylke Bons as the credited creator.</summary>
+        public static string CreditsParagraph {
+            get {
+                return "Created by Hylke Bons.\n\n" +
+                    "SparkleShare was designed and built by Hylke Bons. " +
+                    "This version is maintained by Markus Stoll as a community continuation " +
+                    "after the original project was discontinued.\n\n" +
+                    "Open Source software — you may use, modify, and redistribute it under the GNU GPLv3.";
+            }
+        }
 
         public string RunningVersion;
 

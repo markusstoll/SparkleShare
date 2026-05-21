@@ -6,11 +6,13 @@
     <project_license>GPL-3.0+</project_license>
     
     <url type="homepage">https://www.sparkleshare.org/</url>
-    <url type="bugtracker">https://www.github.com/hbons/SparkleShare/issues</url>
+    <url type="bugtracker">https://github.com/markusstoll/SparkleShare/issues</url>
+    <url type="vcs-browser">https://github.com/hbons/SparkleShare</url>
     <url type="donation">https://www.patreon.com/SparkleShare</url>
     
     <description>
-        <p>SparkleShare is a file sharing and collaboration app. It works just like Dropbox, and you can run it on your own server.</p>
+        <p>SparkleShare was created by Hylke Bons. It is a file sharing and collaboration app that works like Dropbox while you run it on your own server.</p>
+        <p>This Flatpak follows the community-maintained fork at markusstoll/SparkleShare; the original project lives at hbons/SparkleShare.</p>
         <p>SparkleShare is based on the popular version control system Git. It even supports the popular extension Git LFS to deal well with large files. So if you are already using Git repositories in your company, SparkleShare will integrate seamlessly.</p>
         <p>Note: if you're using GNOME Shell as your desktop environment on a distribution other than Ubuntu, install the AppIndicator Support extension to show the SparkleShare status icon. If for whatever reason you need the legacy status icon, start SparkleShare with --status-icon=gtk.</p>
     </description>

@@ -1,5 +1,9 @@
 4.0.1-beta (2026):
 
+    SparkleShare was created by Hylke Bons (https://github.com/hbons/SparkleShare).
+    This 4.x line is maintained by Markus Stoll as a community continuation of
+    that project; most of the original design and code remains Hylke's work.
+
     This release is a macOS technology preview: SparkleShare on .NET 10 with a
     modernized Apple Silicon / Intel build. Linux and Windows still use the
     legacy stack (3.38 and earlier) until later migration phases.

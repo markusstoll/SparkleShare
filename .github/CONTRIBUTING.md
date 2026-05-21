@@ -1,8 +1,11 @@
+> **Maintained fork:** SparkleShare was created by Hylke Bons. Active development for the 4.x macOS line continues at [markusstoll/SparkleShare](https://github.com/markusstoll/SparkleShare) — please open issues and pull requests there. The text below is Hylke’s original contribution guide from the upstream project.
+
 Hey there!
 
 I'm Hylke, the creator of this project. It's about time I wrote something up about how to contribute to SparkleShare, so here goes...
 
-Contributions to SparkleShare are always welcome! I'm not a great coder. I like to design icons and interfaces, so there are always bugs or things that can be done better. Take a look at the [list of open issues](https://github.com/hbons/SparkleShare/issues). Smaller issues or places where refactoring is needed are marked with `FIXME` or `TODO` in the source code. If you have a fix for SparkleShare, simply open a pull request against the master branch (keeping in mind the [[coding style]]) and if you think your change is significant enough to be copyrighted, feel free to add your name and email to the `AUTHORS` file. Releases are done at least once a month, so there won't be long waits for bug fixes.
+Contributions to SparkleShare are always welcome!
+Take a look at the [list of open issues](https://github.com/markusstoll/SparkleShare/issues) (fork) or the [archived upstream](https://github.com/hbons/SparkleShare/issues). Smaller issues or places where refactoring is needed are marked with `FIXME` or `TODO` in the source code. If you have a fix for SparkleShare, simply open a pull request against the master branch (keeping in mind the [[coding style]]) and if you think your change is significant enough to be copyrighted, feel free to add your name and email to the `AUTHORS` file. Releases are done at least once a month, so there won't be long waits for bug fixes.
 
 SparkleShare tries to keep things simple and to stay out of people's way. Features are only added if they are essential and helpful to a majority of users. If you have a feature that you'd like to be added, please open an issue first, so there can be a discussion whether the feature is actually needed (or it may be it can be done in some other way); do not waste work on a feature that isn't actually desired. By limiting the amount of features, we can spend more time on making the core features solid in order to help people get things done.
 
