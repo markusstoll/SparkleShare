@@ -1,3 +1,44 @@
+4.0.1-beta (2026):
+
+    This release is a macOS technology preview: SparkleShare on .NET 10 with a
+    modernized Apple Silicon / Intel build. Linux and Windows still use the
+    legacy stack (3.38 and earlier) until later migration phases.
+
+    Requirements (macOS):
+    - macOS 12.0 or later
+    - .NET 10 SDK and Xcode only needed to build from source
+    - Distributed builds are signed, notarized DMGs (arm64 and x64 separately)
+
+    All platforms (backend / Sparkles):
+    - Migrate core libraries (Sparkles, Sparkles.Git) to .NET 10 (SDK-style projects)
+    - Add SparkleShare.Core.sln with unit tests and GitHub Actions CI
+    - Replace obsolete .NET APIs (WebRequest, reflection, URI handling, time zones)
+    - Reactivate announcement listeners (no hard-coded default service URL)
+    - Tray menu: "Force Pull" per synced folder
+    - Git over SSH: always use SparkleShare's own key; ignore ssh-agent
+      (IdentityAgent=none) to avoid hangs when an agent is missing or broken
+    - Refresh Git LFS filter/hook SSH settings on repo load; backfill storage_type
+      in projects.xml when LFS filters are present
+
+    macOS:
+    - New SDK-style app (net10.0-macos), minimum macOS 12
+    - Replace deprecated WebView with WKWebView in event log
+    - Fix remaining AppKit deprecations; Release build is warning-free
+    - Prevent multiple app instances (NSRunningApplication)
+    - Keep existing config under ~/.config/org.sparkleshare.SparkleShare
+    - Bundle matching Dugite git + git-lfs per CPU architecture (arm64 / Intel)
+    - Release scripts: build, sign, notarize, and staple separate DMGs
+      (scripts/release-mac-dmgs.sh → SparkleShare_4.0.1-beta_arm64.dmg and _x64.dmg)
+    - Remove legacy SparkleShareInviteOpener.app (register sparkleshare:// in-app: TODO)
+    - Debug builds can fall back to system git when the bundle is not present
+
+    Known limitations:
+    - macOS only; Windows/Linux migration not included
+    - sparkleshare:// invite URLs not yet registered on macOS
+    - Manual QA (tray, setup, sync, wake-from-sleep) still in progress
+    - See MIGRATION-TODO.md for remaining Phase 1 items
+
+
 3.38.0 (Sun 29 Nov, 2020):
 
     - Added support for LibRAavatar
