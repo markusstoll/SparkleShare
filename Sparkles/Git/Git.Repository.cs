@@ -239,9 +239,10 @@ namespace Sparkles.Git {
         public override bool SyncDown ()
         {
             string lfs_is_behind_file_path = Path.Combine (LocalPath, ".git", "lfs", "is_behind");
+            string revision_before = null;
 
             if (StorageType == StorageType.LargeFiles)
-                File.Create (lfs_is_behind_file_path).Close ();
+                revision_before = CurrentRevision;
 
             var git_fetch = new GitCommand (LocalPath, "fetch --progress origin " + branch, auth_info);
 
@@ -260,17 +261,27 @@ namespace Sparkles.Git {
 
             if (Merge ()) {
                 if (StorageType == StorageType.LargeFiles) {
-                    // Pull LFS files manually to benefit from concurrency
-                    var git_lfs_pull = new GitCommand (LocalPath, "lfs pull origin", auth_info);
-                    git_lfs_pull.StartAndWaitForExit ();
+                    bool run_lfs_pull = File.Exists (lfs_is_behind_file_path);
 
-                    if (git_lfs_pull.ExitCode != 0) {
-                        Error = ErrorStatus.HostUnreachable;
-                        return false;
+                    if (!run_lfs_pull && revision_before != null) {
+                        string revision_after = CurrentRevision;
+                        run_lfs_pull = !revision_before.Equals (revision_after);
                     }
 
-                    if (File.Exists (lfs_is_behind_file_path))
-                        File.Delete (lfs_is_behind_file_path);
+                    if (run_lfs_pull) {
+                        Logger.LogInfo ("Git", Name + " | Running git lfs pull (behind marker or new commits)");
+
+                        var git_lfs_pull = new GitCommand (LocalPath, "lfs pull origin", auth_info);
+                        git_lfs_pull.StartAndWaitForExit ();
+
+                        if (git_lfs_pull.ExitCode != 0) {
+                            Error = ErrorStatus.HostUnreachable;
+                            return false;
+                        }
+
+                        if (File.Exists (lfs_is_behind_file_path))
+                            File.Delete (lfs_is_behind_file_path);
+                    }
                 }
 
                 UpdateSizes ();
@@ -278,6 +289,15 @@ namespace Sparkles.Git {
             }
 
             return false;
+        }
+
+
+        protected override bool NeedsLfsCatchUp ()
+        {
+            if (StorageType != StorageType.LargeFiles)
+                return false;
+
+            return File.Exists (Path.Combine (LocalPath, ".git", "lfs", "is_behind"));
         }
 
 
@@ -344,8 +364,15 @@ namespace Sparkles.Git {
 
                 if (value)
                     File.WriteAllText (unsynced_file_path, "");
-                else
+                else {
                     File.Delete (unsynced_file_path);
+
+                    if (StorageType == StorageType.LargeFiles) {
+                        string lfs_is_behind_file_path = Path.Combine (LocalPath, ".git", "lfs", "is_behind");
+                        if (File.Exists (lfs_is_behind_file_path))
+                            File.Delete (lfs_is_behind_file_path);
+                    }
+                }
             }
         }
 

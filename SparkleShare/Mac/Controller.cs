@@ -66,12 +66,10 @@ namespace SparkleShare {
             }
             
             NSWorkspace.Notifications.ObserveDidWake((object sender, NSNotificationEventArgs e) => {
-                Console.Write ("Detected wake from sleep, checking for updates\n");
+                Logger.LogInfo ("Controller", "Detected wake from sleep, checking for updates");
                 if (SparkleShare.Controller.RepositoriesLoaded) {
-                    foreach (var repo in SparkleShare.Controller.Repositories) {
-                        repo.SyncDown();
-                        repo.SyncUp();
-                    }
+                    foreach (var repo in SparkleShare.Controller.Repositories)
+                        repo.RequestSyncAfterWake ();
                 }
             });
         }

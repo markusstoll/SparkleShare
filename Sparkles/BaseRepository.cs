@@ -235,10 +235,13 @@ namespace Sparkles {
                     this.poll_interval = PollInterval.Long;
             }
             
-            // In the unlikely case that we haven't synced up our
-            // changes or the server was down, sync up again
-            if (HasUnsyncedChanges && !this.is_syncing && Error == ErrorStatus.None)
-                SyncUpBase ();
+            // Retry unsynced work; LFS "is_behind" needs SyncDown (pull), not another push loop
+            if (!this.is_syncing && Error == ErrorStatus.None) {
+                if (NeedsLfsCatchUp ())
+                    SyncDownBase ();
+                else if (HasUnsyncedChanges)
+                    SyncUpBase ();
+            }
             
             if (Status != SyncStatus.Idle && Status != SyncStatus.Error) {
                 Status = SyncStatus.Idle;
@@ -376,6 +379,32 @@ namespace Sparkles {
                 this.last_poll = DateTime.Now;
                 SyncDownBase ();
             }).Start ();
+        }
+
+
+        /// <summary>After system wake: sync on a worker thread, only when needed.</summary>
+        public void RequestSyncAfterWake ()
+        {
+            new Thread (() => {
+                if (Status == SyncStatus.Paused || this.is_syncing || IsBuffering)
+                    return;
+
+                Logger.LogInfo (Name, "Wake from sleep — checking for sync");
+
+                if (HasRemoteChanges || NeedsLfsCatchUp ())
+                    SyncDownBase ();
+
+                if (Error == ErrorStatus.None && (HasUnsyncedChanges || HasLocalChanges))
+                    SyncUpBase ();
+
+            }).Start ();
+        }
+
+
+        /// <summary>LFS repos may need a pull when .git/lfs/is_behind exists (no new Git commits).</summary>
+        protected virtual bool NeedsLfsCatchUp ()
+        {
+            return false;
         }
 
 
