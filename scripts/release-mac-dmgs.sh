@@ -13,11 +13,19 @@ export CONFIG=Release
 export MD_APPLE_SDK_ROOT="${MD_APPLE_SDK_ROOT:-/Applications/Xcode.app}"
 
 MAC_BIN="SparkleShare/Mac/bin/Release/net10.0-macos"
+MAC_CSPROJ="SparkleShare/Mac/SparkleShare.Mac.csproj"
+DOTNET="${DOTNET:-/usr/local/share/dotnet/dotnet}"
+[ -x "$DOTNET" ] || DOTNET="dotnet"
+
+clean_mac_release() {
+    echo "Cleaning Release Mac build (bin, obj, cached bundles)…"
+    rm -rf "$ROOT/$MAC_BIN"
+    "$DOTNET" clean "$MAC_CSPROJ" -c Release --nologo
+}
 
 for RID in osx-arm64 osx-x64; do
     echo "========== $RID =========="
-    # Full clean per architecture so version/plist and CPU type cannot leak across DMGs.
-    rm -rf "$ROOT/$MAC_BIN"
+    clean_mac_release
     RID="$RID" "$SCRIPT_DIR/build-mac.sh"
     RID="$RID" "$SCRIPT_DIR/sign-pack-notarize-mac.sh"
     echo

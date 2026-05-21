@@ -74,6 +74,13 @@ namespace SparkleShare {
         }
 
 
+        /// <summary>Re-read the running app version (e.g. before showing About).</summary>
+        public void RefreshRunningVersion ()
+        {
+            RunningVersion = InstallationInfo.Version;
+        }
+
+
         void CheckForNewVersion ()
         {
             UpdateStatusEvent ("Checking for updates…", null);

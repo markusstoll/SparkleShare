@@ -18,6 +18,7 @@
 using System;
 
 using AppKit;
+using Sparkles;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -69,7 +70,10 @@ namespace SparkleShare {
             };
 
             Controller.ShowWindowEvent += delegate {
-                SparkleShare.Controller.Invoke (() => OrderFrontRegardless ());
+                SparkleShare.Controller.Invoke (() => {
+                    RefreshVersionLabel ();
+                    OrderFrontRegardless ();
+                });
             };
 
             Controller.UpdateStatusEvent += delegate (string text, string download_url) {
@@ -83,6 +87,32 @@ namespace SparkleShare {
         }
 
 
+        /// <summary>Version shown in About; use the app bundle plist (matches Finder/Get Info).</summary>
+        static string BundleDisplayVersion ()
+        {
+            var version = NSBundle.MainBundle.InfoDictionary?.ObjectForKey (
+                new NSString ("CFBundleShortVersionString"));
+
+            if (version != null) {
+                string text = version.ToString ();
+
+                if (!string.IsNullOrWhiteSpace (text))
+                    return text.Trim ();
+            }
+
+            return InstallationInfo.Version;
+        }
+
+
+        void RefreshVersionLabel ()
+        {
+            Controller.RefreshRunningVersion ();
+            string display = BundleDisplayVersion ();
+            Controller.RunningVersion = display;
+            this.version_text_field.StringValue = "version " + display;
+        }
+
+
         private void CreateAbout ()
         {
             this.about_image = NSImage.ImageNamed ("about");
@@ -93,7 +123,7 @@ namespace SparkleShare {
                 Frame = new CGRect (0, 0, 720, 260)
             };
 
-            this.version_text_field = new SparkleLabel ("version " + Controller.RunningVersion, NSTextAlignment.Left) {
+            this.version_text_field = new SparkleLabel ("version " + BundleDisplayVersion (), NSTextAlignment.Left) {
                 DrawsBackground = false,
                 Frame           = new CGRect (295, 140, 318, 22),
                 TextColor       = NSColor.White

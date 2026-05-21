@@ -48,7 +48,12 @@ if [ -n "$RID" ]; then
     rm -rf "$MAC_BIN/${EFFECTIVE_RID}/SparkleShare.app"
 fi
 
-if [ -n "$RID" ]; then
+if [ "$CONFIG" = "Release" ]; then
+    # Avoid a fresh Info.plist with a stale MonoBundle/SparkleShare.dll (wrong About version).
+    "$DOTNET" build SparkleShare/Mac/SparkleShare.Mac.csproj \
+        -c "$CONFIG" ${RID:+-r "$RID"} --self-contained "$SELF_CONTAINED" \
+        -t:Rebuild "$@"
+elif [ -n "$RID" ]; then
     "$DOTNET" build SparkleShare/Mac/SparkleShare.Mac.csproj \
         -c "$CONFIG" -r "$RID" --self-contained "$SELF_CONTAINED" "$@"
 else
