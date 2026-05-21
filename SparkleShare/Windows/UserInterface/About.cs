@@ -28,15 +28,14 @@ namespace SparkleShare {
 
         public AboutController Controller = new AboutController ();
 
-        private Label updates;
-        private SparkleLink release_download_link;
+        private SparkleStatusLink updates;
 
 
         public About ()
         {
             Title      = "About SparkleShare";
             ResizeMode = ResizeMode.NoResize;
-			Height     = 288;
+			Height     = 320;
 			Width      = 720;
             Icon       = UserInterfaceHelpers.GetImageSource("sparkleshare-app", "ico");
 
@@ -59,21 +58,9 @@ namespace SparkleShare {
                 });
             };
 
-            Controller.UpdateLabelEvent += delegate (string text) {
+            Controller.UpdateStatusEvent += delegate (string text, string download_url) {
                 Dispatcher.BeginInvoke ((Action) delegate {
-                    this.updates.Content = text;
-                    this.updates.UpdateLayout ();
-                });
-            };
-
-            Controller.ReleaseDownloadLinkEvent += delegate (string url) {
-                Dispatcher.BeginInvoke ((Action) delegate {
-                    if (string.IsNullOrEmpty (url))
-                        this.release_download_link.Visibility = Visibility.Collapsed;
-                    else {
-                        this.release_download_link.Visibility = Visibility.Visible;
-                        this.release_download_link.SetUrl (url);
-                    }
+                    this.updates.SetStatus (text, download_url);
                 });
             };
         }
@@ -95,18 +82,16 @@ namespace SparkleShare {
                 Foreground = new SolidColorBrush (Colors.White)
             };
 
-            this.updates = new Label () {
-                Content    = "Checking for updates...",
-                FontSize   = 11,
-                Foreground = new SolidColorBrush (Color.FromArgb (128, 255, 255, 255))
+            this.updates = new SparkleStatusLink () {
+                Content = "Checking for updates..."
             };
 
             TextBlock credits = new TextBlock () {
                 FontSize     = 11,
                 Foreground   = new SolidColorBrush (Colors.White),
-                Text         = Controller.CreditsParagraph,
+                Text         = AboutController.CreditsParagraph,
                 TextWrapping = TextWrapping.Wrap,
-                Width        = 318
+                Width        = 330
             };
 
             SparkleLink website_link = new SparkleLink ("Website", Controller.WebsiteLinkAddress);
@@ -128,32 +113,26 @@ namespace SparkleShare {
             Canvas.SetLeft (this.updates, 289);
             Canvas.SetTop (this.updates, 109);
 
-            this.release_download_link = new SparkleLink (AboutController.ReleaseDownloadLinkLabel, Controller.ReleasesLinkAddress);
-            this.release_download_link.Visibility = Visibility.Collapsed;
-            canvas.Children.Add (this.release_download_link);
-            Canvas.SetLeft (this.release_download_link, 289);
-            Canvas.SetTop (this.release_download_link, 125);
-
             canvas.Children.Add (credits);
-            Canvas.SetLeft (credits, 294);
-            Canvas.SetTop (credits, 142);
+            Canvas.SetLeft (credits, 289);
+            Canvas.SetTop (credits, 155);
 
             canvas.Children.Add (website_link);
             Canvas.SetLeft (website_link, 289);
-            Canvas.SetTop (website_link, 222);
+            Canvas.SetTop (website_link, 248);
 
             canvas.Children.Add (credits_link);
             Canvas.SetLeft (credits_link, 289 + website_link.ActualWidth + 60);
-            Canvas.SetTop (credits_link, 222);
+            Canvas.SetTop (credits_link, 248);
 
             canvas.Children.Add (report_problem_link);
             Canvas.SetLeft (report_problem_link, 289 + website_link.ActualWidth + credits_link.ActualWidth + 115);
-            Canvas.SetTop (report_problem_link, 222);
+            Canvas.SetTop (report_problem_link, 248);
 
             canvas.Children.Add (debug_log_link);
             Canvas.SetLeft (debug_log_link, 289 + website_link.ActualWidth + credits_link.ActualWidth +
                 report_problem_link.ActualWidth + 220);
-            Canvas.SetTop (debug_log_link, 222);
+            Canvas.SetTop (debug_log_link, 248);
 
             Content = canvas;
         }
@@ -200,9 +179,41 @@ namespace SparkleShare {
         }
 
 
-        public void SetUrl (string url)
+    }
+
+
+    class SparkleStatusLink : Label {
+
+        string link_url;
+
+
+        public SparkleStatusLink ()
         {
-            this.link_url = url;
+            FontSize = 11;
+        }
+
+
+        public void SetStatus (string text, string download_url)
+        {
+            Content = text;
+            link_url = download_url;
+
+            if (string.IsNullOrEmpty (download_url)) {
+                Cursor     = Cursors.Arrow;
+                Foreground = new SolidColorBrush (Color.FromArgb (128, 255, 255, 255));
+            } else {
+                Cursor     = Cursors.Hand;
+                Foreground = new SolidColorBrush (Color.FromRgb (135, 178, 227));
+            }
+        }
+
+
+        protected override void OnMouseUp (MouseButtonEventArgs e)
+        {
+            if (!string.IsNullOrEmpty (link_url))
+                SparkleShare.Controller.OpenWebsite (link_url);
+
+            base.OnMouseUp (e);
         }
     }
 }

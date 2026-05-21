@@ -28,14 +28,16 @@ namespace SparkleShare {
 
         public AboutController Controller = new AboutController ();
 
-        private NSTextField version_text_field, updates_text_field, credits_text_field;
-        private SparkleLink website_link, credits_link, report_problem_link, debug_log_link, release_download_link;
+        private NSTextField version_text_field, credits_text_field;
+        private SparkleStatusLink updates_status;
+        private SparkleLink website_link, credits_link, report_problem_link, debug_log_link;
         private NSImage about_image;
         private NSImageView about_image_view;
         private NSButton hidden_close_button;
 
 
         public About (NativeHandle handle) : base (handle) { }
+
 
         public About () : base ()
         {
@@ -70,16 +72,9 @@ namespace SparkleShare {
                 SparkleShare.Controller.Invoke (() => OrderFrontRegardless ());
             };
 
-            Controller.UpdateLabelEvent += delegate (string text) {
-                SparkleShare.Controller.Invoke (() => { this.updates_text_field.StringValue = text; });
-            };
-
-            Controller.ReleaseDownloadLinkEvent += delegate (string url) {
+            Controller.UpdateStatusEvent += delegate (string text, string download_url) {
                 SparkleShare.Controller.Invoke (() => {
-                    if (string.IsNullOrEmpty (url))
-                        this.release_download_link.Hidden = true;
-                    else
-                        this.release_download_link.Show (url);
+                    this.updates_status.SetStatus (text, download_url);
                 });
             };
 
@@ -104,51 +99,47 @@ namespace SparkleShare {
                 TextColor       = NSColor.White
             };
 
-            this.updates_text_field = new SparkleLabel ("Checking for updates…", NSTextAlignment.Left) {
-                DrawsBackground = false,
-                Frame           = new CGRect (295, Frame.Height - 232, 318, 98),
-                TextColor       = NSColor.FromCalibratedRgba (1.0f, 1.0f, 1.0f, 0.5f)
-            };
-
             this.credits_text_field = new SparkleLabel (
-                Controller.CreditsParagraph, NSTextAlignment.Left) {
-                
+                AboutController.CreditsParagraph, NSTextAlignment.Left) {
+
                 DrawsBackground = false,
-                Frame           = new CGRect (295, Frame.Height - 260, 318, 98),
+                Frame           = new CGRect (295, 28, 318, 72),
                 TextColor       = NSColor.White
             };
 
+            this.updates_status = new SparkleStatusLink () {
+                Frame = new CGRect (295, 115, 318, 22)
+            };
+            this.updates_status.SetStatus ("Checking for updates…", null);
+
+            const float FooterLinksY = 10;
+
             this.website_link       = new SparkleLink ("Website", Controller.WebsiteLinkAddress);
-            this.website_link.Frame = new CGRect (new CGPoint (295, 25), this.website_link.Frame.Size);
-            
+            this.website_link.Frame = new CGRect (new CGPoint (295, FooterLinksY), this.website_link.Frame.Size);
+
             this.credits_link       = new SparkleLink ("Credits", Controller.CreditsLinkAddress);
             this.credits_link.Frame = new CGRect (
-                new CGPoint (this.website_link.Frame.X + this.website_link.Frame.Width + 10, 25),
+                new CGPoint (this.website_link.Frame.X + this.website_link.Frame.Width + 10, FooterLinksY),
                 this.credits_link.Frame.Size);
-            
+
             this.report_problem_link       = new SparkleLink ("Report a problem", Controller.ReportProblemLinkAddress);
             this.report_problem_link.Frame = new CGRect (
-                new CGPoint (this.credits_link.Frame.X + this.credits_link.Frame.Width + 10, 25),
+                new CGPoint (this.credits_link.Frame.X + this.credits_link.Frame.Width + 10, FooterLinksY),
                 this.report_problem_link.Frame.Size);
-            
+
             this.debug_log_link       = new SparkleLink ("Debug log", Controller.DebugLogLinkAddress);
             this.debug_log_link.Frame = new CGRect (
-                new CGPoint (this.report_problem_link.Frame.X + this.report_problem_link.Frame.Width + 10, 25),
+                new CGPoint (this.report_problem_link.Frame.X + this.report_problem_link.Frame.Width + 10, FooterLinksY),
                 this.debug_log_link.Frame.Size);
 
-            this.release_download_link = new SparkleLink (AboutController.ReleaseDownloadLinkLabel, Controller.ReleasesLinkAddress);
-            this.release_download_link.Frame = new CGRect (new CGPoint (295, 8), this.release_download_link.Frame.Size);
-            this.release_download_link.Hidden = true;
-
             ContentView.AddSubview (this.about_image_view);
-            ContentView.AddSubview (this.version_text_field);
-            ContentView.AddSubview (this.updates_text_field);
             ContentView.AddSubview (this.credits_text_field);
+            ContentView.AddSubview (this.updates_status);
+            ContentView.AddSubview (this.version_text_field);
             ContentView.AddSubview (this.website_link);
             ContentView.AddSubview (this.credits_link);
             ContentView.AddSubview (this.report_problem_link);
             ContentView.AddSubview (this.debug_log_link);
-            ContentView.AddSubview (this.release_download_link);
         }
 
 
@@ -168,25 +159,70 @@ namespace SparkleShare {
 
 
         private class SparkleAboutDelegate : NSWindowDelegate {
-            
+
             public override bool WindowShouldClose (NSObject sender)
             {
                 (sender as About).Controller.WindowClosed ();
                 return false;
             }
         }
-        
-        
+
+
+        /// <summary>Update line: plain label, or clickable when a download URL is set.</summary>
+        private class SparkleStatusLink : NSTextField {
+
+            NSUrl url;
+
+
+            public SparkleStatusLink () : base ()
+            {
+                Font = NSFont.SystemFontOfSize (11);
+                Bordered        = false;
+                DrawsBackground = false;
+                Editable        = false;
+                Selectable      = false;
+            }
+
+
+            public void SetStatus (string text, string download_url)
+            {
+                StringValue = text;
+
+                if (string.IsNullOrEmpty (download_url)) {
+                    url       = null;
+                    TextColor = NSColor.FromCalibratedRgba (1.0f, 1.0f, 1.0f, 0.5f);
+                } else {
+                    url       = new NSUrl (download_url);
+                    TextColor = NSColor.FromCalibratedRgba (0.7f, 0.85f, 1.0f, 1.0f);
+                }
+            }
+
+
+            public override void MouseUp (NSEvent e)
+            {
+                if (url != null)
+                    SparkleShare.Controller.OpenWebsite (url.ToString ());
+            }
+
+
+            public override void ResetCursorRects ()
+            {
+                if (url != null)
+                    AddCursorRect (Bounds, NSCursor.PointingHandCursor);
+            }
+        }
+
+
         private class SparkleLink : NSTextField {
-            
-            private NSUrl url;
-            
-            
+
+            NSUrl url;
+
+
             public SparkleLink (string text, string address) : base ()
             {
                 StringValue = text;
                 this.url = new NSUrl (address);
-                
+
                 Font = NSFont.SystemFontOfSize (11);
 
                 TextColor = NSColor.FromCalibratedRgba (1.0f, 1.0f, 1.0f, 0.5f);
@@ -198,24 +234,16 @@ namespace SparkleShare {
                 Editable        = false;
                 Selectable      = false;
 
-				SizeToFit ();
-            }
-
-
-            public void Show (string address)
-            {
-                this.url = new NSUrl (address);
-                Hidden = false;
                 SizeToFit ();
             }
-            
-            
+
+
             public override void MouseUp (NSEvent e)
             {
                 SparkleShare.Controller.OpenWebsite (this.url.ToString ());
             }
-            
-            
+
+
             public override void ResetCursorRects ()
             {
                 AddCursorRect (Bounds, NSCursor.PointingHandCursor);

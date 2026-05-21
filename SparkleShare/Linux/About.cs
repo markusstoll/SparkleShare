@@ -27,7 +27,6 @@ namespace SparkleShare {
         public AboutController Controller = new AboutController ();
 
         Label updates;
-        Link release_download_link;
 
 
         public About () : base ("About SparkleShare")
@@ -37,7 +36,7 @@ namespace SparkleShare {
             WindowPosition = WindowPosition.CenterAlways;
             TypeHint       = Gdk.WindowTypeHint.Dialog;
 
-            SetSizeRequest (640, 260);
+            SetSizeRequest (640, 300);
 
 
             DeleteEvent += delegate (object o, DeleteEventArgs args) {
@@ -64,22 +63,14 @@ namespace SparkleShare {
                 });
             };
 
-            Controller.UpdateLabelEvent += delegate (string text) {
+            Controller.UpdateStatusEvent += delegate (string text, string download_url) {
                 Application.Invoke (delegate {
-                    updates.Text = text;
-                    updates.ShowAll();
-                });
-            };
+                    if (string.IsNullOrEmpty (download_url))
+                        updates.Text = text;
+                    else
+                        updates.Markup = string.Format ("<a href=\"{0}\">{1}</a>", download_url, text);
 
-            Controller.ReleaseDownloadLinkEvent += delegate (string url) {
-                Application.Invoke (delegate {
-                    if (string.IsNullOrEmpty (url))
-                        release_download_link.Hide ();
-                    else {
-                        release_download_link.Markup = string.Format (
-                            "<a href=\"{0}\">{1}</a>", url, AboutController.ReleaseDownloadLinkLabel);
-                        release_download_link.ShowAll ();
-                    }
+                    updates.ShowAll ();
                 });
             };
 
@@ -125,7 +116,7 @@ namespace SparkleShare {
             var credits = new Label (AboutController.CreditsParagraph) {
                 Xalign = 0, Xpad = 0,
                 LineWrap = true,
-                MaxWidthChars = 42
+                MaxWidthChars = 48
             };
 
             credits.StyleContext.AddProvider (label_css_provider, 800);
@@ -137,13 +128,9 @@ namespace SparkleShare {
             var report_problem_link = new Link ("Report a problem", Controller.ReportProblemLinkAddress);
             var debug_log_link      = new Link ("Debug log", Controller.DebugLogLinkAddress);
 
-            release_download_link = new Link (AboutController.ReleaseDownloadLinkLabel, Controller.ReleasesLinkAddress);
-            release_download_link.Hide ();
-
             layout_vertical.PackStart (new Label (""), true, true, 0);
             layout_vertical.PackStart (version, false, false, 0);
             layout_vertical.PackStart (updates, false, false, 0);
-            layout_vertical.PackStart (release_download_link, false, false, 0);
             layout_vertical.PackStart (credits, false, false, 6);
             layout_vertical.PackStart (links_layout, false, false, 6);
 

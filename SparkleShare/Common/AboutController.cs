@@ -33,11 +33,8 @@ namespace SparkleShare {
         public event Action ShowWindowEvent = delegate { };
         public event Action HideWindowEvent = delegate { };
 
-        public event UpdateLabelEventDelegate UpdateLabelEvent = delegate { };
-        public delegate void UpdateLabelEventDelegate (string text);
-
-        /// <summary>Non-null URL shows a download link; null hides it.</summary>
-        public event Action<string> ReleaseDownloadLinkEvent = delegate { };
+        /// <summary>Status text; non-null download_url makes the line a download link.</summary>
+        public event Action<string, string> UpdateStatusEvent = delegate { };
 
         public readonly string WebsiteLinkAddress          = "https://www.sparkleshare.org/";
         public readonly string OriginalProjectLinkAddress  = "https://github.com/hbons/SparkleShare";
@@ -46,16 +43,14 @@ namespace SparkleShare {
         public readonly string ReportProblemLinkAddress    = "https://github.com/markusstoll/SparkleShare/issues";
         public readonly string DebugLogLinkAddress         = "file://" + SparkleShare.Controller.Config.LogFilePath;
 
-        public const string ReleaseDownloadLinkLabel = "Download release";
+        public const string UpdateDownloadSuffix = " (download)";
 
         /// <summary>Shown in the About dialog; keep Hylke Bons as the credited creator.</summary>
         public static string CreditsParagraph {
             get {
                 return "Created by Hylke Bons.\n\n" +
-                    "SparkleShare was designed and built by Hylke Bons. " +
-                    "This version is maintained by Markus Stoll as a community continuation " +
-                    "after the original project was discontinued.\n\n" +
-                    "Open Source software — you may use, modify, and redistribute it under the GNU GPLv3.";
+                    "Maintained by Markus Stoll as a community continuation of the original project.\n\n" +
+                    "Open Source — use, modify, and redistribute under the GNU GPLv3.";
             }
         }
 
@@ -81,8 +76,7 @@ namespace SparkleShare {
 
         void CheckForNewVersion ()
         {
-            UpdateLabelEvent ("Checking for updates…");
-            ReleaseDownloadLinkEvent (null);
+            UpdateStatusEvent ("Checking for updates…", null);
             Thread.Sleep (500);
 
             try {
@@ -90,7 +84,7 @@ namespace SparkleShare {
                 using (HttpResponseMessage response = client.GetAsync (LatestReleaseApi).GetAwaiter ().GetResult ()) {
 
                     if (response.StatusCode == HttpStatusCode.NotFound) {
-                        UpdateLabelEvent ("No published release found");
+                        UpdateStatusEvent ("No published release found", null);
                         return;
                     }
 
@@ -98,23 +92,24 @@ namespace SparkleShare {
                     string json = response.Content.ReadAsStringAsync ().GetAwaiter ().GetResult ();
 
                     if (!TryParseLatestRelease (json, out string tag_name, out string html_url)) {
-                        UpdateLabelEvent ("Couldn't check for updates");
+                        UpdateStatusEvent ("Couldn't check for updates", null);
                         return;
                     }
 
                     string display_version = NormalizeTag (tag_name);
 
                     if (IsNewerRelease (tag_name, RunningVersion)) {
-                        UpdateLabelEvent ("An update is available: " + display_version);
-                        ReleaseDownloadLinkEvent (html_url ?? ReleasesLinkAddress);
+                        UpdateStatusEvent (
+                            "Update available: " + display_version + UpdateDownloadSuffix,
+                            html_url ?? ReleasesLinkAddress);
                     } else {
-                        UpdateLabelEvent ("✓ You are running the latest version");
+                        UpdateStatusEvent ("✓ You are running the latest version", null);
                     }
                 }
 
             } catch (Exception e) {
                 Logger.LogInfo ("UI", "Failed to check GitHub release at " + LatestReleaseApi, e);
-                UpdateLabelEvent ("Couldn't check for updates");
+                UpdateStatusEvent ("Couldn't check for updates", null);
             }
         }
 
