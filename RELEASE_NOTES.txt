@@ -1,3 +1,29 @@
+4.0.2 (2026):
+
+    Bug-fix and polish release for the macOS 4.x line (builds on 4.0.1-beta).
+
+    All platforms (backend / Sparkles):
+    - Fix spurious SyncUp every few seconds when Git LFS left a stale
+      .git/lfs/is_behind marker; run SyncDown when LFS catch-up is needed
+    - Run git lfs pull only when the remote has new commits or the marker
+      exists, not on every poll
+    - About dialog: check markusstoll/SparkleShare GitHub releases/latest
+      for updates instead of sparkleshare.org
+
+    macOS:
+    - After wake from sleep, run sync on a background thread (avoids UI freeze)
+    - About: single-line update hint with clickable “(download)” link;
+      shorter credits text; layout fixes for original window size
+    - About shows CFBundleShortVersionString from the app bundle (matches
+      Finder / Get Info)
+    - Release builds: dotnet clean per architecture in release-mac-dmgs.sh;
+      Release rebuild in build-mac.sh to avoid stale MonoBundle DLLs
+
+    Distributed builds:
+    - Signed, notarized DMGs: SparkleShare_4.0.2_arm64.dmg and _x64.dmg
+      (scripts/release-mac-dmgs.sh)
+
+
 4.0.1-beta (2026):
 
     SparkleShare was created by Hylke Bons (https://github.com/hbons/SparkleShare).
