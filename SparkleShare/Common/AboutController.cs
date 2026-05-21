@@ -16,7 +16,9 @@
 
 
 using System;
+using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 
 using Sparkles;
@@ -25,11 +27,17 @@ namespace SparkleShare {
 
     public class AboutController {
 
+        const string LatestReleaseApi =
+            "https://api.github.com/repos/markusstoll/SparkleShare/releases/latest";
+
         public event Action ShowWindowEvent = delegate { };
         public event Action HideWindowEvent = delegate { };
 
         public event UpdateLabelEventDelegate UpdateLabelEvent = delegate { };
         public delegate void UpdateLabelEventDelegate (string text);
+
+        /// <summary>Non-null URL shows a download link; null hides it.</summary>
+        public event Action<string> ReleaseDownloadLinkEvent = delegate { };
 
         public readonly string WebsiteLinkAddress          = "https://www.sparkleshare.org/";
         public readonly string OriginalProjectLinkAddress  = "https://github.com/hbons/SparkleShare";
@@ -37,6 +45,8 @@ namespace SparkleShare {
         public readonly string ReleasesLinkAddress         = "https://github.com/markusstoll/SparkleShare/releases";
         public readonly string ReportProblemLinkAddress    = "https://github.com/markusstoll/SparkleShare/issues";
         public readonly string DebugLogLinkAddress         = "file://" + SparkleShare.Controller.Config.LogFilePath;
+
+        public const string ReleaseDownloadLinkLabel = "Download release";
 
         /// <summary>Shown in the About dialog; keep Hylke Bons as the credited creator.</summary>
         public static string CreditsParagraph {
@@ -72,31 +82,103 @@ namespace SparkleShare {
         void CheckForNewVersion ()
         {
             UpdateLabelEvent ("Checking for updates…");
+            ReleaseDownloadLinkEvent (null);
             Thread.Sleep (500);
 
-            var uri = new Uri ("https://www.sparkleshare.org/version");
-
             try {
-                using (var client = new HttpClient ())
-                using (HttpResponseMessage response = client.GetAsync (uri).GetAwaiter ().GetResult ()) {
-                    response.EnsureSuccessStatusCode ();
-                    string latest_version = response.Content.ReadAsStringAsync ().GetAwaiter ().GetResult ();
-                    latest_version = latest_version.Trim ();
+                using (var client = CreateGitHubClient ())
+                using (HttpResponseMessage response = client.GetAsync (LatestReleaseApi).GetAwaiter ().GetResult ()) {
 
-                    if (TryParseReleaseVersion (latest_version, out Version latest)
-                        && TryParseReleaseVersion (RunningVersion, out Version current)) {
-                        if (latest > current)
-                            UpdateLabelEvent ("An update (version " + latest_version + ") is available!");
-                        else
-                            UpdateLabelEvent ("✓ You are running the latest version");
-                    } else
+                    if (response.StatusCode == HttpStatusCode.NotFound) {
+                        UpdateLabelEvent ("No published release found");
+                        return;
+                    }
+
+                    response.EnsureSuccessStatusCode ();
+                    string json = response.Content.ReadAsStringAsync ().GetAwaiter ().GetResult ();
+
+                    if (!TryParseLatestRelease (json, out string tag_name, out string html_url)) {
+                        UpdateLabelEvent ("Couldn't check for updates");
+                        return;
+                    }
+
+                    string display_version = NormalizeTag (tag_name);
+
+                    if (IsNewerRelease (tag_name, RunningVersion)) {
+                        UpdateLabelEvent ("An update is available: " + display_version);
+                        ReleaseDownloadLinkEvent (html_url ?? ReleasesLinkAddress);
+                    } else {
                         UpdateLabelEvent ("✓ You are running the latest version");
+                    }
                 }
 
             } catch (Exception e) {
-                Logger.LogInfo ("UI", "Failed to download " + uri , e);
-                UpdateLabelEvent ("Couldn’t check for updates\t");
+                Logger.LogInfo ("UI", "Failed to check GitHub release at " + LatestReleaseApi, e);
+                UpdateLabelEvent ("Couldn't check for updates");
             }
+        }
+
+
+        static HttpClient CreateGitHubClient ()
+        {
+            var client = new HttpClient ();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd ("SparkleShare");
+            client.DefaultRequestHeaders.Accept.ParseAdd ("application/vnd.github+json");
+            return client;
+        }
+
+
+        static bool TryParseLatestRelease (string json, out string tag_name, out string html_url)
+        {
+            tag_name = null;
+            html_url = null;
+
+            using (JsonDocument document = JsonDocument.Parse (json)) {
+                JsonElement root = document.RootElement;
+
+                if (root.TryGetProperty ("tag_name", out JsonElement tag))
+                    tag_name = tag.GetString ();
+
+                if (root.TryGetProperty ("html_url", out JsonElement url))
+                    html_url = url.GetString ();
+            }
+
+            return !string.IsNullOrWhiteSpace (tag_name);
+        }
+
+
+        static string NormalizeTag (string tag)
+        {
+            if (string.IsNullOrWhiteSpace (tag))
+                return tag;
+
+            tag = tag.Trim ();
+
+            if (tag.StartsWith ("v", StringComparison.OrdinalIgnoreCase))
+                tag = tag.Substring (1);
+
+            return tag;
+        }
+
+
+        static bool IsNewerRelease (string latest_tag, string running_version)
+        {
+            string latest  = NormalizeTag (latest_tag);
+            string running = NormalizeTag (running_version);
+
+            if (!TryParseReleaseVersion (latest, out Version latest_version)
+                || !TryParseReleaseVersion (running, out Version current_version))
+                return false;
+
+            int compare = latest_version.CompareTo (current_version);
+
+            if (compare > 0)
+                return true;
+
+            if (compare < 0)
+                return false;
+
+            return string.Compare (latest, running, StringComparison.OrdinalIgnoreCase) > 0;
         }
 
 

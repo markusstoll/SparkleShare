@@ -29,7 +29,7 @@ namespace SparkleShare {
         public AboutController Controller = new AboutController ();
 
         private NSTextField version_text_field, updates_text_field, credits_text_field;
-        private SparkleLink website_link, credits_link, report_problem_link, debug_log_link;
+        private SparkleLink website_link, credits_link, report_problem_link, debug_log_link, release_download_link;
         private NSImage about_image;
         private NSImageView about_image_view;
         private NSButton hidden_close_button;
@@ -72,6 +72,15 @@ namespace SparkleShare {
 
             Controller.UpdateLabelEvent += delegate (string text) {
                 SparkleShare.Controller.Invoke (() => { this.updates_text_field.StringValue = text; });
+            };
+
+            Controller.ReleaseDownloadLinkEvent += delegate (string url) {
+                SparkleShare.Controller.Invoke (() => {
+                    if (string.IsNullOrEmpty (url))
+                        this.release_download_link.Hidden = true;
+                    else
+                        this.release_download_link.Show (url);
+                });
             };
 
 
@@ -127,6 +136,10 @@ namespace SparkleShare {
                 new CGPoint (this.report_problem_link.Frame.X + this.report_problem_link.Frame.Width + 10, 25),
                 this.debug_log_link.Frame.Size);
 
+            this.release_download_link = new SparkleLink (AboutController.ReleaseDownloadLinkLabel, Controller.ReleasesLinkAddress);
+            this.release_download_link.Frame = new CGRect (new CGPoint (295, 8), this.release_download_link.Frame.Size);
+            this.release_download_link.Hidden = true;
+
             ContentView.AddSubview (this.about_image_view);
             ContentView.AddSubview (this.version_text_field);
             ContentView.AddSubview (this.updates_text_field);
@@ -135,6 +148,7 @@ namespace SparkleShare {
             ContentView.AddSubview (this.credits_link);
             ContentView.AddSubview (this.report_problem_link);
             ContentView.AddSubview (this.debug_log_link);
+            ContentView.AddSubview (this.release_download_link);
         }
 
 
@@ -185,6 +199,14 @@ namespace SparkleShare {
                 Selectable      = false;
 
 				SizeToFit ();
+            }
+
+
+            public void Show (string address)
+            {
+                this.url = new NSUrl (address);
+                Hidden = false;
+                SizeToFit ();
             }
             
             

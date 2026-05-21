@@ -29,6 +29,7 @@ namespace SparkleShare {
         public AboutController Controller = new AboutController ();
 
         private Label updates;
+        private SparkleLink release_download_link;
 
 
         public About ()
@@ -62,6 +63,17 @@ namespace SparkleShare {
                 Dispatcher.BeginInvoke ((Action) delegate {
                     this.updates.Content = text;
                     this.updates.UpdateLayout ();
+                });
+            };
+
+            Controller.ReleaseDownloadLinkEvent += delegate (string url) {
+                Dispatcher.BeginInvoke ((Action) delegate {
+                    if (string.IsNullOrEmpty (url))
+                        this.release_download_link.Visibility = Visibility.Collapsed;
+                    else {
+                        this.release_download_link.Visibility = Visibility.Visible;
+                        this.release_download_link.SetUrl (url);
+                    }
                 });
             };
         }
@@ -116,6 +128,12 @@ namespace SparkleShare {
             Canvas.SetLeft (this.updates, 289);
             Canvas.SetTop (this.updates, 109);
 
+            this.release_download_link = new SparkleLink (AboutController.ReleaseDownloadLinkLabel, Controller.ReleasesLinkAddress);
+            this.release_download_link.Visibility = Visibility.Collapsed;
+            canvas.Children.Add (this.release_download_link);
+            Canvas.SetLeft (this.release_download_link, 289);
+            Canvas.SetTop (this.release_download_link, 125);
+
             canvas.Children.Add (credits);
             Canvas.SetLeft (credits, 294);
             Canvas.SetTop (credits, 142);
@@ -151,8 +169,12 @@ namespace SparkleShare {
 
     public class SparkleLink : Label {
 
+        string link_url;
+
+
         public SparkleLink (string title, string url)
         {
+            this.link_url = url;
             FontSize   = 11;
             Cursor     = Cursors.Hand;
             Foreground = new SolidColorBrush (Color.FromRgb (135, 178, 227));
@@ -173,8 +195,14 @@ namespace SparkleShare {
             Content = text_block;
 
             MouseUp += delegate {
-                SparkleShare.Controller.OpenWebsite (url);
+                SparkleShare.Controller.OpenWebsite (this.link_url);
             };
+        }
+
+
+        public void SetUrl (string url)
+        {
+            this.link_url = url;
         }
     }
 }
