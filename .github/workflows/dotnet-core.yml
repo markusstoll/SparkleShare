@@ -30,8 +30,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # SparkleShare.Core.sln also lists Mac/Windows heads; do not restore or build
+      # the full solution on Linux (requires macos/windows workloads).
       - name: Restore
-        run: dotnet restore SparkleShare.Core.sln
+        run: |
+          dotnet restore Sparkles/Sparkles.csproj
+          dotnet restore Sparkles/Git/Sparkles.Git.csproj
+          dotnet restore Sparkles/Tests/Sparkles.Tests.csproj
 
       - name: Build (Sparkles + tests)
         run: |
