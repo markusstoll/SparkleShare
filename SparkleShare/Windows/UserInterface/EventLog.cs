@@ -18,7 +18,6 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Security.Permissions;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -335,7 +334,6 @@ namespace SparkleShare
         }
     }
 
-    [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
     [ComVisible(true)]
     public class SparkleScriptingObject
     {
