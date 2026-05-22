@@ -54,12 +54,14 @@ After a successful build you should have:
 ```
 SparkleShare\Windows\bin\Release\
   SparkleShare.exe
-  git_scm\          (Portable Git; created on first Windows build)
+  git_scm\          (Portable Git; dev build only)
   Images\
   Presets\
 ```
 
-`postBuild.cmd` runs automatically after `dotnet build` on Windows when `git_scm` is missing. It uses `curl`, `certutil`, and the self-extracting PortableGit archive listed in `git.download`.
+Installer builds (`BuildInstaller=true`) publish to `bin\Release\publish\`; bundled Git must land in **`publish\git_scm\`** (that folder is what the MSI harvests). `postBuild.cmd` runs after `dotnet publish` into `$(PublishDir)git_scm` and the build fails if `git_scm\cmd\git.exe` is missing.
+
+`postBuild.cmd` uses `curl`, `certutil`, and the PortableGit archive listed in `git.download`.
 
 Legacy entry point (delegates to the script above):
 
@@ -69,7 +71,7 @@ SparkleShare\Windows\build.cmd
 
 ## Building the MSI installer
 
-Requires a **Release** app output at `SparkleShare\Windows\bin\Release\` (run the app build first).
+Requires a **Release** publish output at `SparkleShare\Windows\bin\Release\publish\` (including `git_scm\`).
 
 ```bat
 scripts\build-windows.cmd installer
