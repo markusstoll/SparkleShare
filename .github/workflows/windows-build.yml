@@ -56,7 +56,8 @@ jobs:
           $msi = $null
           foreach ($dir in $candidates) {
             if (-not (Test-Path $dir)) { continue }
-            $found = Get-ChildItem -Path $dir -Filter '*.msi' -ErrorAction SilentlyContinue
+            $found = Get-ChildItem -Path $dir -Recurse -Filter '*.msi' -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -notmatch '\\obj\\' }
             if ($found) { $msi = $found[0]; break }
           }
           if (-not $msi) {
