@@ -50,6 +50,7 @@
     <None Include="..\Common\Presets\own-server.png" Link="Presets\own-server.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Common\Presets\bitbucket.xml" Link="Presets\bitbucket.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Common\Presets\github.xml" Link="Presets\github.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Common\Presets\gitlab.png" Link="Presets\gitlab.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Common\Presets\gitlab.xml" Link="Presets\gitlab.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Common\Presets\own-server.xml" Link="Presets\own-server.xml" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Images\sparkleshare-folder.ico" CopyToOutputDirectory="PreserveNewest" />
