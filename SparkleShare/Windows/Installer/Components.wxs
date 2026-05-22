@@ -35,8 +35,9 @@
         <ComponentGroup Id="Components" >
             <Component Guid="$(var.ProductComponentGUID)" Directory="INSTALLFOLDER">
                 <!-- The file represented by this component -->
-                <File Id="SparkleShareAppexe" Source="$(var.SparkleShare.Windows.TargetPath)" Checksum="yes" />
-                <File Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.dll" Checksum="yes" />
+                <!-- TargetPath is the managed assembly (.dll); the app host is SparkleShare.exe -->
+                <File Id="SparkleShareAppexe" Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.exe" KeyPath="yes" Checksum="yes" />
+                <File Id="SparkleShareAppDll" Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.dll" Checksum="yes" />
                 <File Source="$(var.SparkleShare.Windows.TargetDir)Sparkles.dll" Checksum="yes" />
                 <File Source="$(var.SparkleShare.Windows.TargetDir)Sparkles.Git.dll" Checksum="yes" />
                 <File Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.runtimeconfig.json" Checksum="yes" />
