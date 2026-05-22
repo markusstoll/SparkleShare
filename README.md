@@ -6,7 +6,7 @@ SparkleShare was **created by [Hylke Bons](https://github.com/hbons)**. Most of 
 **Original project & history:** [hbons/SparkleShare](https://github.com/hbons/SparkleShare) · [sparkleshare.org](https://www.sparkleshare.org/)
 
 > [!NOTE]
-> The upstream repository is archived. For current macOS previews and migration work, use this fork. For the story behind the original project, see 🌱 [issue #2006](https://github.com/hbons/SparkleShare/issues/2006).
+> Please read 🌱 [issue #2006](https://github.com/hbons/SparkleShare/issues/2006) for the future of the original project. For current macOS previews and migration work, use this fork.
 
 <br>
 
