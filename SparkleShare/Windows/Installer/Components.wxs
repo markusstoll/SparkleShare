@@ -35,12 +35,12 @@
         <ComponentGroup Id="Components" >
             <Component Guid="$(var.ProductComponentGUID)" Directory="INSTALLFOLDER">
                 <!-- The file represented by this component -->
-                <!--<File Id="SparkleShareAppexe" Source="$(var.SparkleShare.Windows.TargetPath)" Checksum="yes" />-->
-                <File Id="SparkleShareAppexe" Source="$(var.SparkleShare.Windows.ProjectDir)bin/SparkleShare.Windows.exe"  Checksum="yes" />
-                <File Source="$(var.SparkleShare.Windows.ProjectDir)bin/SparkleShare.Windows.dll" Checksum="yes" />
-                <File Source="$(var.SparkleShare.Windows.ProjectDir)bin/Sparkles.dll" Checksum="yes" />
-                <File Source="$(var.SparkleShare.Windows.ProjectDir)bin/Sparkles.Git.dll" Checksum="yes" />
-                <File Source="$(var.SparkleShare.Windows.ProjectDir)bin/SparkleShare.Windows.runtimeconfig.json" Checksum="yes" />
+                <File Id="SparkleShareAppexe" Source="$(var.SparkleShare.Windows.TargetPath)" Checksum="yes" />
+                <File Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.dll" Checksum="yes" />
+                <File Source="$(var.SparkleShare.Windows.TargetDir)Sparkles.dll" Checksum="yes" />
+                <File Source="$(var.SparkleShare.Windows.TargetDir)Sparkles.Git.dll" Checksum="yes" />
+                <File Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.runtimeconfig.json" Checksum="yes" />
+                <File Source="$(var.SparkleShare.Windows.TargetDir)SparkleShare.deps.json" Checksum="yes" />
                 <!-- Start Menu shortcut to run the program -->
                 <Shortcut Id="ApplicationStartMenuShortcut" Directory="ApplicationProgramsFolder" Advertise="no"
                     Icon="icon.ico" Name="$(var.Name)"

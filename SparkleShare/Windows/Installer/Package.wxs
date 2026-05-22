@@ -61,12 +61,10 @@
             I used WordPad to successfully create the .rtf file.
         -->
         <WixVariable Id="WixUILicenseRtf" Value="$(var.SolutionDir)SparkleShare\Windows\LICENSE.rtf" />
-        
-        <!-- Also referred to as the banner image that fills the background -->
-        <WixVariable Id="WixUIDialogBmp" Value="$(var.SolutionDir)SparkleShare\Common\Images\Left-Dialog.png" />
 
-        <!-- Also referred to as the header image that goes across the top -->
-        <WixVariable Id="WixUIBannerBmp" Value="$(var.SolutionDir)SparkleShare\Common\Images\Top-Banner.png" />
+        <!-- WiX UI bitmaps (use assets that exist in the repo) -->
+        <WixVariable Id="WixUIDialogBmp" Value="$(var.SolutionDir)SparkleShare\Common\Images\side-splash.png" />
+        <WixVariable Id="WixUIBannerBmp" Value="$(var.SolutionDir)SparkleShare\Common\Images\readme-banner.png" />
 
         <!--
             Add Icon and ARPPRODUCTICON (the installer icon).

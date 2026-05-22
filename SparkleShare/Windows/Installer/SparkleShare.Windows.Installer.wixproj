@@ -2,6 +2,9 @@
 <Project Sdk="WixToolset.Sdk/4.0.5">
   <PropertyGroup>
     <WindowsAppOutput>$(MSBuildThisFileDirectory)..\bin\Release\</WindowsAppOutput>
+    <!-- Repo root (three levels up from Installer/). WiX only defines SolutionDir when building a .sln. -->
+    <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\'))</RepositoryRoot>
+    <DefineConstants>$(DefineConstants);SolutionDir=$(RepositoryRoot)\</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutputPath>..\build\setup\x64\Debug\</OutputPath>
