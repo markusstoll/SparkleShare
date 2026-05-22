@@ -29,7 +29,11 @@ On a Mac you can sanity-check that the project compiles:
 dotnet build SparkleShare/Windows/SparkleShare.Windows.csproj -c Release
 ```
 
-Output is under `SparkleShare/Windows/bin/Release/` but **without** `git_scm`. For a release-quality build, use a Windows PC, VM, or a CI job on `windows-latest`.
+Output is under `SparkleShare/Windows/bin/Release/` but **without** `git_scm`. For a release-quality build, use a Windows PC, VM, or GitHub Actions (below).
+
+## CI (GitHub Actions)
+
+On branch `migrate/windows-net10`, pushes trigger [`.github/workflows/windows-build.yml`](../../.github/workflows/windows-build.yml) on `windows-latest`: Release build, Portable Git bundle, and x64 MSI. Download artifacts from the Actions run (MSI and a slim app folder without `git_scm`). You can also start a run manually via **Actions → Windows build → Run workflow**.
 
 ## Building the application
 
