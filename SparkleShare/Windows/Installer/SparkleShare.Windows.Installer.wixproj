@@ -11,7 +11,8 @@
     <Platforms>x86;x64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\dist\windows\setup\x64\Release\</OutputPath>
+    <OutputPath>$(RepositoryRoot)dist\windows\setup\x64\Release\</OutputPath>
+    <OutputName>SparkleShare</OutputName>
     <SuppressValidation>false</SuppressValidation>
     <SuppressAllWarnings>false</SuppressAllWarnings>
     <Pedantic>true</Pedantic>

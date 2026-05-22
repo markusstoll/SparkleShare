@@ -81,10 +81,10 @@ Or:
 dotnet build SparkleShare\Windows\Installer\SparkleShare.Windows.Installer.wixproj -c Release -p:Platform=x64
 ```
 
-Installer output:
+Installer output (WiX may write under `SparkleShare\Windows\Installer\bin\x64\Release\` first; `scripts\build-windows.cmd installer` and CI stage the MSI to):
 
 ```
-dist\windows\setup\x64\Release\
+dist\windows\setup\x64\Release\SparkleShare.msi
 ```
 
 Product version is defined in `Installer\productVersion.wxi` (keep in sync with `SparkleShare.Windows.csproj` and `Properties\AssemblyAttributes.cs`).

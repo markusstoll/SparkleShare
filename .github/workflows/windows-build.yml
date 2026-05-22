@@ -43,11 +43,41 @@ jobs:
       - name: Build app, bundle Git, and create MSI
         run: scripts\build-windows.cmd installer
 
+      - name: Stage MSI for artifact upload
+        id: msi
+        shell: pwsh
+        run: |
+          $candidates = @(
+            'dist/windows/setup/x64/Release',
+            'SparkleShare/Windows/Installer/bin/x64/Release',
+            'SparkleShare/Windows/Installer/bin/Release',
+            'SparkleShare/Windows/build/setup/x64/Release'
+          )
+          $msi = $null
+          foreach ($dir in $candidates) {
+            if (-not (Test-Path $dir)) { continue }
+            $found = Get-ChildItem -Path $dir -Filter '*.msi' -ErrorAction SilentlyContinue
+            if ($found) { $msi = $found[0]; break }
+          }
+          if (-not $msi) {
+            Write-Host 'MSI search (excluding obj):'
+            Get-ChildItem -Recurse -Filter '*.msi' |
+              Where-Object { $_.FullName -notmatch '\\obj\\' } |
+              ForEach-Object { Write-Host $_.FullName }
+            throw 'No MSI produced by the WiX build'
+          }
+          $dest = 'dist/windows/setup/x64/Release'
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          $staged = Join-Path $dest $msi.Name
+          Copy-Item -LiteralPath $msi.FullName -Destination $staged -Force
+          Write-Host "Staged $staged (from $($msi.FullName))"
+          "path=$dest/*.msi" >> $env:GITHUB_OUTPUT
+
       - name: Upload MSI installer
         uses: actions/upload-artifact@v4
         with:
           name: SparkleShare-Windows-msi-${{ github.sha }}
-          path: dist/windows/setup/x64/Release/*.msi
+          path: ${{ steps.msi.outputs.path }}
           if-no-files-found: error
 
       - name: Upload portable app folder (without git_scm)
