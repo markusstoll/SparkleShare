@@ -61,10 +61,22 @@ namespace SparkleShare {
             StatusIcon.Dispose ();
         }
 
+
+        [STAThread]
+        public static void Main (string [] args)
+        {
+            SparkleShare.Initialize (args);
+            var ui = new UserInterface ();
+            SparkleShare.UI = ui;
+            ui.Run (args);
+        }
+
+
         private static void OnUnhandledException (object sender, ThreadExceptionEventArgs exception_args)
         {
             try {
                 Logger.WriteCrashReport (exception_args.Exception);
+                SparkleShare.Controller.OpenFile (SparkleShare.Controller.Config.LogFilePath);
             } finally {
                 Environment.Exit (-1);
             }

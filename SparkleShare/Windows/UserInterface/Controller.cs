@@ -47,16 +47,17 @@ namespace SparkleShare {
 
         public override void Initialize ()
         {
-            // Add msysgit to path, as we cannot asume it is added to the path
-            // Asume it is installed in @"<exec dir>\msysgit\bin"
-            string executable_path = Path.GetDirectoryName (Forms.Application.ExecutablePath);
-            string msysgit_path    = Path.Combine (executable_path, "msysgit");
+            string asm_dir = Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location) ?? string.Empty;
+            string [] search_path = new string [] {
+                Path.Combine (asm_dir, "git_scm", "mingw64", "bin"),
+                Path.Combine (asm_dir, "git_scm", "mingw32", "bin"),
+                Path.Combine (asm_dir, "git_scm", "usr", "bin"),
+                Path.Combine (asm_dir, "git_scm", "cmd")
+            };
 
-            Environment.SetEnvironmentVariable ("HOME", Environment.GetFolderPath (Environment.SpecialFolder.UserProfile));
-
-            SSHCommand.SSHPath = Path.Combine (msysgit_path, "usr", "bin");
-            SSHFetcher.SSHKeyScan = Path.Combine (msysgit_path, "usr", "bin", "ssh-keyscan.exe");
-            GitCommand.GitPath = Path.Combine (msysgit_path, "bin", "git.exe");
+            Command.SetSearchPath (search_path);
+            Environment.SetEnvironmentVariable ("HOME",
+                Environment.GetFolderPath (Environment.SpecialFolder.UserProfile));
 
             base.Initialize ();
         }
@@ -191,9 +192,9 @@ namespace SparkleShare {
         }
 
 
-        public override void Quit ()
+        public override void PlatformQuit ()
         {
-            base.Quit ();
+            Forms.Application.Exit ();
         }
     }
 }

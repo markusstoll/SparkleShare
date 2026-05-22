@@ -75,10 +75,24 @@ Legacy `SparkleShare.sln` (Mac / Windows / Linux UI) does not build until platfo
 
 **Estimate: 6–10 person-days (with Cursor)**
 
-- [ ] `SparkleShare.Windows` → `net10.0-windows`
+Branch: `migrate/windows-net10`
+
+### Done (initial port from uenz fork)
+
+- [x] `SparkleShare.Windows` → SDK `net10.0-windows` (WinForms + WPF, shared `SparkleShare.projitems`)
+- [x] Portable Git bundle via `postBuild.cmd` / `git.download` → `git_scm` in output
+- [x] `Command.SetSearchPath` for bundled Git on Windows
+- [x] WiX v4 installer (`SparkleShare.Windows.Installer`, product version 4.0.2)
+- [x] `scripts/build-windows.cmd` (app + optional `installer` argument)
+- [x] Projects in `SparkleShare.Core.sln`
+
+### Still open (Phase 2)
+
+- [ ] Build + MSI on a Windows machine (CI job or manual QA)
+- [ ] Tray icon, protocol handler (`sparkleshare://`; still separate `SparkleShareInviteOpener.exe`)
 - [ ] Unify WinForms shell + WPF UI (or WPF-only entry)
-- [ ] Tray icon, protocol handler (`sparkleshare://`; Windows still has separate `SparkleShareInviteOpener.exe`)
-- [ ] Installer / packaging
+- [ ] Port optional uenz extras (e.g. `ScpUri`)
+- [ ] Remove legacy `SparkleShare.sln` / .NET 4.5 Windows project artifacts when no longer needed
 
 ---
 

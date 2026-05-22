@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -24,10 +25,17 @@ namespace Sparkles {
     public class Command : Process {
 
         bool write_output;
+        static string [] extended_search_path;
 
 
         public Command (string path, string args) : this (path, args, write_output: true)
         {
+        }
+
+
+        public static void SetSearchPath (string [] paths)
+        {
+            extended_search_path = paths;
         }
 
 
@@ -124,16 +132,30 @@ namespace Sparkles {
         protected static string LocateCommand (string name)
         {
             string [] possible_command_paths = {
-                Environment.GetFolderPath (Environment.SpecialFolder.Personal) + "/bin/" + name,
-                InstallationInfo.Directory + "/bin/" + name,
-                "/usr/local/bin/" + name,
-                "/usr/bin/" + name,
-                "/opt/local/bin/" + name
+                Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "bin"),
+                Path.Combine (InstallationInfo.Directory, "bin"),
+                "/usr/local/bin/",
+                "/usr/bin/",
+                "/opt/local/bin/"
             };
 
-            foreach (string path in possible_command_paths) {
-                if (File.Exists (path))
-                    return path;
+            var command_paths = new List<string> ();
+
+            if (extended_search_path != null)
+                command_paths.AddRange (extended_search_path);
+
+            command_paths.AddRange (possible_command_paths);
+
+            foreach (string path in command_paths) {
+                string candidate = Path.Combine (path, name);
+
+                if (File.Exists (candidate))
+                    return candidate;
+
+                candidate = Path.Combine (path, name + ".exe");
+
+                if (File.Exists (candidate))
+                    return candidate;
             }
 
             return name;

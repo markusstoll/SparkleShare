@@ -27,6 +27,23 @@ namespace SparkleShare {
         public static UserInterface UI;
 
 
+        #if WINDOWS
+        public static void Initialize (string [] args)
+        {
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            InstallationInfo.SetHostAssembly (typeof (SparkleShare).Assembly);
+
+            Controller = new Controller (Configuration.DefaultConfiguration);
+
+            if (!SingleInstance.TryAcquire ()) {
+                Console.Error.WriteLine ("SparkleShare is already running; exiting silently.");
+                Environment.Exit (0);
+            }
+
+            Controller.Initialize ();
+        }
+
+        #else
         #if !__MonoCS__
         [STAThread]
         #endif
@@ -56,6 +73,7 @@ namespace SparkleShare {
             GC.WaitForPendingFinalizers ();
             #endif
         }
+        #endif
 
 
         static void OnUnhandledException (object sender, UnhandledExceptionEventArgs exception_args)

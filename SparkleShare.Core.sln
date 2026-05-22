@@ -9,23 +9,54 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparkles.Git", "Sparkles\Gi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sparkles.Tests", "Sparkles\Tests\Sparkles.Tests.csproj", "{8AB2969A-951F-4146-A0DD-C46D7526AC20}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparkleShare.Mac", "SparkleShare\Mac\SparkleShare.Mac.csproj", "{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparkleShare.Windows", "SparkleShare\Windows\SparkleShare.Windows.csproj", "{728483AA-E34B-4441-BF2C-C8BC2901E4E0}"
+EndProject
+Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "SparkleShare.Windows.Installer", "SparkleShare\Windows\Installer\SparkleShare.Windows.Installer.wixproj", "{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2C914413-B31C-4362-93C7-1AE34F09112A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2C914413-B31C-4362-93C7-1AE34F09112A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C914413-B31C-4362-93C7-1AE34F09112A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C914413-B31C-4362-93C7-1AE34F09112A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C914413-B31C-4362-93C7-1AE34F09112A}.Release|x64.ActiveCfg = Release|Any CPU
+		{2C914413-B31C-4362-93C7-1AE34F09112A}.Release|x64.Build.0 = Release|Any CPU
 		{009FDCD7-1D57-4202-BB6D-8477D8C6B8EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{009FDCD7-1D57-4202-BB6D-8477D8C6B8EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{009FDCD7-1D57-4202-BB6D-8477D8C6B8EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{009FDCD7-1D57-4202-BB6D-8477D8C6B8EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{009FDCD7-1D57-4202-BB6D-8477D8C6B8EE}.Release|x64.ActiveCfg = Release|Any CPU
+		{009FDCD7-1D57-4202-BB6D-8477D8C6B8EE}.Release|x64.Build.0 = Release|Any CPU
 		{8AB2969A-951F-4146-A0DD-C46D7526AC20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8AB2969A-951F-4146-A0DD-C46D7526AC20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AB2969A-951F-4146-A0DD-C46D7526AC20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AB2969A-951F-4146-A0DD-C46D7526AC20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AB2969A-951F-4146-A0DD-C46D7526AC20}.Release|x64.ActiveCfg = Release|Any CPU
+		{8AB2969A-951F-4146-A0DD-C46D7526AC20}.Release|x64.Build.0 = Release|Any CPU
+		{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}.Release|x64.ActiveCfg = Release|Any CPU
+		{8FCDF699-E2C3-4CB3-AF98-44198972AFC0}.Release|x64.Build.0 = Release|Any CPU
+		{728483AA-E34B-4441-BF2C-C8BC2901E4E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{728483AA-E34B-4441-BF2C-C8BC2901E4E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{728483AA-E34B-4441-BF2C-C8BC2901E4E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{728483AA-E34B-4441-BF2C-C8BC2901E4E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{728483AA-E34B-4441-BF2C-C8BC2901E4E0}.Release|x64.ActiveCfg = Release|Any CPU
+		{728483AA-E34B-4441-BF2C-C8BC2901E4E0}.Release|x64.Build.0 = Release|Any CPU
+		{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}.Debug|Any CPU.Build.0 = Debug|x64
+		{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}.Release|Any CPU.ActiveCfg = Release|x64
+		{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}.Release|Any CPU.Build.0 = Release|x64
+		{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}.Release|x64.ActiveCfg = Release|x64
+		{4DF0FBCD-0059-4FE7-AD90-91FE1C4F6900}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

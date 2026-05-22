@@ -5,6 +5,7 @@ on:
     branches: [ main, master, migrate/** ]
     paths:
       - 'Sparkles/**'
+      - 'SparkleShare/**'
       - 'SparkleShare.Core.sln'
       - 'Directory.Build.props'
       - 'global.json'
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - 'Sparkles/**'
+      - 'SparkleShare/**'
       - 'SparkleShare.Core.sln'
       - 'Directory.Build.props'
       - 'global.json'
@@ -31,8 +33,11 @@ jobs:
       - name: Restore
         run: dotnet restore SparkleShare.Core.sln
 
-      - name: Build
-        run: dotnet build SparkleShare.Core.sln --configuration Release --no-restore
+      - name: Build (Sparkles + tests)
+        run: |
+          dotnet build Sparkles/Sparkles.csproj --configuration Release --no-restore
+          dotnet build Sparkles/Git/Sparkles.Git.csproj --configuration Release --no-restore
+          dotnet build Sparkles/Tests/Sparkles.Tests.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test SparkleShare.Core.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test Sparkles/Tests/Sparkles.Tests.csproj --configuration Release --no-build --verbosity normal
