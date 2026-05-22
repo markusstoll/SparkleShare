@@ -50,7 +50,7 @@
     -->
     <CustomAction Id="LaunchApplication"
         Directory="INSTALLFOLDER"
-        ExeCommand="[#SparkleShareAppexe] --pause"
+        ExeCommand="[INSTALLFOLDER]SparkleShare.exe"
         Execute="immediate"
         Return="asyncNoWait"
         Impersonate="yes" />

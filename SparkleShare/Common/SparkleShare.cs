@@ -80,6 +80,17 @@ namespace SparkleShare {
         {
             var exception = (Exception) exception_args.ExceptionObject;
             Logger.WriteCrashReport (exception);
+
+            #if WINDOWS
+            try {
+                System.Windows.Forms.MessageBox.Show (
+                    exception.ToString (),
+                    "SparkleShare crashed",
+                    System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            } catch {
+            }
+            #endif
         }
     }
 }

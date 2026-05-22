@@ -20,6 +20,13 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
+  <!-- Self-contained publish for the WiX MSI (no separate .NET 10 runtime required). -->
+  <PropertyGroup Condition="'$(BuildInstaller)' == 'true'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishDir>$(MSBuildProjectDirectory)\bin\Release\publish\</PublishDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\Sparkles\Sparkles.csproj" />
     <ProjectReference Include="..\..\Sparkles\Git\Sparkles.Git.csproj" />
@@ -72,7 +79,7 @@
     <Resource Include="..\Common\Images\text-balloon.png" Link="Images\text-balloon.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="SparkleShareWindowsPostBuild" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
+  <Target Name="SparkleShareWindowsPostBuild" AfterTargets="Build;Publish" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="&quot;$(ProjectDir)postBuild.cmd&quot; &quot;$(TargetDir)git_scm&quot;" />
   </Target>
 

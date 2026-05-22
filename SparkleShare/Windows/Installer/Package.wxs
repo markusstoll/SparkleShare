@@ -91,10 +91,8 @@
             installed.
         -->
         <Feature Id="Main" Title="SparkleShare" AllowAbsent="no" ConfigurableDirectory="INSTALLFOLDER" AllowAdvertise="no" Description="The core elements that must be installed">
+            <ComponentGroupRef Id="APP_OUTPUT" />
             <ComponentGroupRef Id="Components" />
-            <ComponentGroupRef Id="IMAGES_DIR"/>
-            <ComponentGroupRef Id="PRESETS_DIR"/>
-            <ComponentGroupRef Id="GIT_SCM_DIR"/>
 
         </Feature>
         

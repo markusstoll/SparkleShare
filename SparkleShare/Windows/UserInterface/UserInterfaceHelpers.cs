@@ -42,8 +42,11 @@ namespace SparkleShare {
         public static BitmapFrame GetImageSource (string name, string type)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            Stream image_stream = assembly.GetManifestResourceStream("SparkleShare.Windows.Images." + name + "." + type);
-            return BitmapFrame.Create(image_stream);
+            string resource_name = "SparkleShare.Images." + name + "." + type;
+            Stream image_stream = assembly.GetManifestResourceStream (resource_name);
+            if (image_stream == null)
+                throw new InvalidOperationException ("Missing embedded resource: " + resource_name);
+            return BitmapFrame.Create (image_stream);
         }
 
         public static ImageSource GetImage(string absolutePath)
@@ -60,7 +63,10 @@ namespace SparkleShare {
         public static Drawing.Bitmap GetBitmap (string name)
         {                                          
             Assembly assembly   = Assembly.GetExecutingAssembly ();
-            Stream image_stream = assembly.GetManifestResourceStream ("SparkleShare.Windows.Images." + name + ".png");
+            string resource_name = "SparkleShare.Images." + name + ".png";
+            Stream image_stream = assembly.GetManifestResourceStream (resource_name);
+            if (image_stream == null)
+                throw new InvalidOperationException ("Missing embedded resource: " + resource_name);
             return (Drawing.Bitmap) Drawing.Bitmap.FromStream (image_stream);
         }
         
@@ -68,10 +74,13 @@ namespace SparkleShare {
         public static string GetHTML (string name)
         {                                          
             Assembly assembly        = Assembly.GetExecutingAssembly ();
-            StreamReader html_reader = new StreamReader (
-                assembly.GetManifestResourceStream ("SparkleShare.Windows.HTML." + name));
-            
-            return html_reader.ReadToEnd ();
+            string resource_name = "SparkleShare.HTML." + name;
+            Stream html_stream = assembly.GetManifestResourceStream (resource_name);
+            if (html_stream == null)
+                throw new InvalidOperationException ("Missing embedded resource: " + resource_name);
+
+            using (var html_reader = new StreamReader (html_stream))
+                return html_reader.ReadToEnd ();
         }
     }
 }

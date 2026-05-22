@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="WixToolset.Sdk/4.0.5">
   <PropertyGroup>
-    <WindowsAppOutput>$(MSBuildThisFileDirectory)..\bin\Release\</WindowsAppOutput>
+    <WindowsAppOutput>$(MSBuildThisFileDirectory)..\bin\Release\publish\</WindowsAppOutput>
     <!-- Repo root (three levels up from Installer/). WiX only defines SolutionDir when building a .sln. -->
     <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\'))</RepositoryRoot>
     <DefineConstants>$(DefineConstants);SolutionDir=$(RepositoryRoot)\</DefineConstants>
@@ -37,33 +37,14 @@
     <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
   </ItemGroup>
   <ItemGroup>
-    <HarvestDirectory Include="$(WindowsAppOutput)git_scm">
-      <ComponentGroupName>GIT_SCM_DIR</ComponentGroupName>
+    <HarvestDirectory Include="$(WindowsAppOutput)">
+      <ComponentGroupName>APP_OUTPUT</ComponentGroupName>
       <DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
-      <SuppressRootDirectory>false</SuppressRootDirectory>
+      <SuppressRootDirectory>true</SuppressRootDirectory>
       <SuppressCom>true</SuppressCom>
       <SuppressRegistry>true</SuppressRegistry>
-      <Link>git_scm</Link>
     </HarvestDirectory>
-    <BindPath Include="$(WindowsAppOutput)git_scm" />
-  </ItemGroup>
-  <ItemGroup>
-    <HarvestDirectory Include="$(WindowsAppOutput)Images">
-      <ComponentGroupName>IMAGES_DIR</ComponentGroupName>
-      <DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
-      <SuppressRootDirectory>false</SuppressRootDirectory>
-      <Link>Images</Link>
-    </HarvestDirectory>
-    <BindPath Include="$(WindowsAppOutput)Images" />
-  </ItemGroup>
-  <ItemGroup>
-    <HarvestDirectory Include="$(WindowsAppOutput)Presets">
-      <ComponentGroupName>PRESETS_DIR</ComponentGroupName>
-      <DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
-      <SuppressRootDirectory>false</SuppressRootDirectory>
-      <Link>Presets</Link>
-    </HarvestDirectory>
-    <BindPath Include="$(WindowsAppOutput)Presets" />
+    <BindPath Include="$(WindowsAppOutput)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SparkleShare.Windows.csproj" />
