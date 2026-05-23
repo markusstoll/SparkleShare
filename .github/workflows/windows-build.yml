@@ -81,15 +81,9 @@ jobs:
           path: ${{ steps.msi.outputs.path }}
           if-no-files-found: error
 
-      - name: Upload published app (without git_scm)
+      - name: Upload published app (full publish folder, incl. git_scm)
         uses: actions/upload-artifact@v4
         with:
           name: SparkleShare-Windows-app-${{ github.sha }}
-          path: |
-            SparkleShare/Windows/bin/Release/publish/SparkleShare.exe
-            SparkleShare/Windows/bin/Release/publish/*.dll
-            SparkleShare/Windows/bin/Release/publish/*.json
-            SparkleShare/Windows/bin/Release/publish/Images/**
-            SparkleShare/Windows/bin/Release/publish/Presets/**
-            SparkleShare/Windows/bin/Release/publish/HTML/**
+          path: SparkleShare/Windows/bin/Release/publish/
           if-no-files-found: error

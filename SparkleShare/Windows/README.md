@@ -33,7 +33,7 @@ Output is under `SparkleShare/Windows/bin/Release/` but **without** `git_scm`. F
 
 ## CI (GitHub Actions)
 
-On branch `migrate/windows-net10`, pushes trigger [`.github/workflows/windows-build.yml`](../../.github/workflows/windows-build.yml) on `windows-latest`: Release build, Portable Git bundle, and x64 MSI. Download artifacts from the Actions run (MSI and a slim app folder without `git_scm`). You can also start a run manually via **Actions → Windows build → Run workflow**.
+On branch `migrate/windows-net10`, pushes trigger [`.github/workflows/windows-build.yml`](../../.github/workflows/windows-build.yml) on `windows-latest`: self-contained publish with Portable Git, x64 MSI, and a zip of the full `publish\` folder (same payload as the MSI). You can also start a run manually via **Actions → Windows build → Run workflow**.
 
 ## Building the application
 
