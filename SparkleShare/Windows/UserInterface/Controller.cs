@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 
 using System.Windows;
 using Forms = System.Windows.Forms;
+using Microsoft.Win32;
 
 using Sparkles;
 using Sparkles.Git;
@@ -47,6 +48,8 @@ namespace SparkleShare {
 
         public override void Initialize ()
         {
+            SetInternetExplorerBrowserEmulation ();
+
             string asm_dir = Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location) ?? string.Empty;
             string [] search_path = new string [] {
                 Path.Combine (asm_dir, "git_scm", "mingw64", "bin"),
@@ -60,6 +63,25 @@ namespace SparkleShare {
                 Environment.GetFolderPath (Environment.SpecialFolder.UserProfile));
 
             base.Initialize ();
+        }
+
+
+        /// <summary>Use IE11 document mode for the embedded WPF WebBrowser (Event Log).</summary>
+        static void SetInternetExplorerBrowserEmulation ()
+        {
+            try {
+                string exe_name = Path.GetFileName (Forms.Application.ExecutablePath);
+
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey (
+                    @"Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION")) {
+
+                    if (key != null)
+                        key.SetValue (exe_name, 11001, RegistryValueKind.DWord);
+                }
+
+            } catch (Exception e) {
+                Logger.LogInfo ("UI", "Could not set IE browser emulation for WebBrowser", e);
+            }
         }
 
 

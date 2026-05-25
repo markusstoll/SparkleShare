@@ -19,6 +19,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -45,6 +46,11 @@ namespace SparkleShare
 
         private Grid grid_Base;
 
+        const int SET_FEATURE_ON_PROCESS = 0x00000002;
+
+        // IE "Mark of the Web" — must be first line, with spaces (see about:internet zone).
+        const string MarkOfTheWeb = "<!-- saved from url=(0014)about:internet -->\r\n";
+
         [DllImport("urlmon.dll")]
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.Error)]
@@ -52,6 +58,7 @@ namespace SparkleShare
 
         public EventLog()
         {
+            EnableWebBrowserFeatures ();
             CreateEventLog();
 
             Background = new SolidColorBrush(Color.FromRgb(240, 240, 240));
@@ -65,9 +72,6 @@ namespace SparkleShare
             this.label_History.Content = "History: " + Controller.HistorySize;
 
             this.webbrowser.ObjectForScripting = new SparkleScriptingObject();
-
-            // Disable annoying IE clicking sound
-            CoInternetSetFeatureEnabled(21, 0x00000002, true);
 
             Closing += this.OnClosing;
 
@@ -231,10 +235,19 @@ namespace SparkleShare
         }
 
 
+        static void EnableWebBrowserFeatures ()
+        {
+            // FEATURE_LOCALMACHINE_LOCKDOWN = 20 — allow scripts/active content for local event log HTML.
+            CoInternetSetFeatureEnabled (20, SET_FEATURE_ON_PROCESS, false);
+            CoInternetSetFeatureEnabled (21, SET_FEATURE_ON_PROCESS, true);
+        }
+
+
         private void UpdateContent(string html)
         {
-            string pixmaps_path = System.IO.Path.Combine(Sparkles.Configuration.DefaultConfiguration.TmpPath, "Images");
-            pixmaps_path = pixmaps_path.Replace("\\", "/");
+            string tmp_path = Sparkles.Configuration.DefaultConfiguration.TmpPath;
+            // Paths relative to event-log-view.html in TmpPath (same folder as Images/).
+            string pixmaps_path = "Images";
 
             html = html.Replace("<a href=", "<a class='windows' href=");
             html = html.Replace("<!-- $body-font-family -->", "Segoe UI");
@@ -252,10 +265,16 @@ namespace SparkleShare
             html = html.Replace("<!-- $document-deleted-background-image -->", pixmaps_path + "/document-deleted-12.png");
             html = html.Replace("<!-- $document-moved-background-image -->", pixmaps_path + "/document-moved-12.png");
 
-            this.spinner.Stop();
+            if (!html.StartsWith ("<!-- saved from url=", StringComparison.OrdinalIgnoreCase))
+                html = MarkOfTheWeb + html;
 
-            this.webbrowser.ObjectForScripting = new SparkleScriptingObject();
-            this.webbrowser.NavigateToString(html);
+            string html_path = System.IO.Path.Combine (tmp_path, "event-log-view.html");
+            File.WriteAllText (html_path, html, Encoding.UTF8);
+
+            this.spinner.Stop ();
+
+            this.webbrowser.ObjectForScripting = new SparkleScriptingObject ();
+            this.webbrowser.Navigate (new Uri (html_path));
         }
 
 
