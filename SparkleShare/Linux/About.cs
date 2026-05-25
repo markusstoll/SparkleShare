@@ -27,6 +27,7 @@ namespace SparkleShare {
         public AboutController Controller = new AboutController ();
 
         Label updates;
+        Label version_label;
 
 
         public About () : base ("About SparkleShare")
@@ -58,8 +59,16 @@ namespace SparkleShare {
 
             Controller.ShowWindowEvent += delegate {
                 Application.Invoke (delegate {
+                    Controller.RefreshRunningVersion ();
+                    RefreshVersionLabel ();
                     ShowAll ();
                     Present ();
+                });
+            };
+
+            Controller.VersionLabelEvent += delegate (string label) {
+                Application.Invoke (delegate {
+                    RefreshVersionLabel (label);
                 });
             };
 
@@ -101,13 +110,13 @@ namespace SparkleShare {
             CssProvider label_highlight_css_provider = new CssProvider ();
             label_highlight_css_provider.LoadFromData ("label { color: #a8bbcf; font-size: 12pt; }");
 
-            var version = new Label {
+            this.version_label = new Label {
                 Text = "version " + Controller.RunningVersion,
                 Xalign = 0, Xpad = 0
             };
 
             if (InstallationInfo.IsFlatpak)
-                version.Text += " (Flatpak)";
+                this.version_label.Text += " (Flatpak)";
 
             updates = new Label ("Checking for updates…") {
                 Xalign = 0, Xpad = 0
@@ -121,7 +130,7 @@ namespace SparkleShare {
 
             credits.StyleContext.AddProvider (label_css_provider, 800);
             updates.StyleContext.AddProvider (label_highlight_css_provider, 800);
-            version.StyleContext.AddProvider (label_css_provider, 800);
+            this.version_label.StyleContext.AddProvider (label_css_provider, 800);
 
             var website_link        = new Link ("Website", Controller.WebsiteLinkAddress);
             var credits_link        = new Link ("Credits", Controller.CreditsLinkAddress);
@@ -129,7 +138,7 @@ namespace SparkleShare {
             var debug_log_link      = new Link ("Debug log", Controller.DebugLogLinkAddress);
 
             layout_vertical.PackStart (new Label (""), true, true, 0);
-            layout_vertical.PackStart (version, false, false, 0);
+            layout_vertical.PackStart (this.version_label, false, false, 0);
             layout_vertical.PackStart (updates, false, false, 0);
             layout_vertical.PackStart (credits, false, false, 6);
             layout_vertical.PackStart (links_layout, false, false, 6);
@@ -144,6 +153,18 @@ namespace SparkleShare {
             layout_horizontal.PackStart (layout_vertical, false, false, 0);
 
             Add (layout_horizontal);
+        }
+
+
+        void RefreshVersionLabel (string label = null)
+        {
+            if (this.version_label == null)
+                return;
+
+            this.version_label.Text = label ?? Controller.FormatAboutVersionLabel ();
+
+            if (InstallationInfo.IsFlatpak && !this.version_label.Text.Contains ("(Flatpak)"))
+                this.version_label.Text += " (Flatpak)";
         }
     }
 

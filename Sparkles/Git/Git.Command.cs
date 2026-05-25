@@ -238,12 +238,57 @@ namespace Sparkles.Git {
 
 
         /// <summary>
-        /// Prefix for shell hooks (Git LFS) so git-lfs subprocesses use only the SparkleShare key.
+        /// Prefix for POSIX shell hooks and Linux LFS filters (uses the <c>env</c> utility).
         /// </summary>
         public static string FormatGitSSHEnvPrefix (SSHAuthenticationInfo auth_info)
         {
             return "env SSH_AUTH_SOCK= SSH_AGENT_PID= GIT_SSH_COMMAND='" +
                 FormatGitSSHCommand (auth_info) + "' ";
+        }
+
+
+        /// <summary>
+        /// Lines for <c>#!/bin/sh</c> hooks on Windows (no standalone <c>env</c> in PATH).
+        /// </summary>
+        public static string FormatGitSSHShellScriptPrefix (SSHAuthenticationInfo auth_info)
+        {
+            return "unset SSH_AUTH_SOCK SSH_AGENT_PID" + Environment.NewLine +
+                "export GIT_SSH_COMMAND='" + FormatGitSSHCommand (auth_info) + "'" + Environment.NewLine;
+        }
+
+
+        static string EscapeForShSingleQuoted (string value)
+        {
+            return value.Replace ("'", "'\\''");
+        }
+
+
+        /// <summary>
+        /// Git config filter.lfs.smudge on Windows (bundled Git: run via MSYS <c>sh.exe</c>, not <c>env</c>).
+        /// </summary>
+        static string FormatWindowsLfsSmudgeCommand (SSHAuthenticationInfo auth_info)
+        {
+            string bin = Configuration.DefaultConfiguration.BinPath.TrimEnd ('\\', '/');
+            string scm_root = Path.GetDirectoryName (bin);
+            string sh = Path.GetFullPath (Path.Combine (scm_root, "..", "usr", "bin", "sh.exe"));
+            string git_lfs = Path.Combine (bin, "git-lfs.exe");
+
+            if (!File.Exists (git_lfs))
+                git_lfs = Path.Combine (bin, "git-lfs");
+
+            string ssh_command = EscapeForShSingleQuoted (FormatGitSSHCommand (auth_info));
+
+            if (!File.Exists (sh)) {
+                Logger.LogInfo ("Git",
+                    "Bundled sh.exe not found for LFS smudge; SSH env may not apply to git-lfs");
+                return "\"" + git_lfs.Replace ("\\", "/") + "\" smudge %f";
+            }
+
+            return string.Format (
+                "\"{0}\" -c \"unset SSH_AUTH_SOCK SSH_AGENT_PID; export GIT_SSH_COMMAND='{1}'; '{2}' smudge %f\"",
+                sh.Replace ("\\", "/"),
+                ssh_command,
+                git_lfs.Replace ("\\", "/"));
         }
 
 
@@ -267,11 +312,16 @@ namespace Sparkles.Git {
             string smudge_command;
             string clean_command;
 
-            if (InstallationInfo.OperatingSystem == OS.macOS || InstallationInfo.OperatingSystem == OS.Windows) {
-                smudge_command = FormatGitSSHEnvPrefix (auth_info) +
-                    Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/") + " smudge %f";
+            string git_lfs = Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs")
+                .Replace ("\\", "/");
 
-                clean_command = Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/") + " clean %f";
+            if (InstallationInfo.OperatingSystem == OS.Windows) {
+                smudge_command = FormatWindowsLfsSmudgeCommand (auth_info);
+                clean_command = git_lfs + " clean %f";
+
+            } else if (InstallationInfo.OperatingSystem == OS.macOS) {
+                smudge_command = FormatGitSSHEnvPrefix (auth_info) + git_lfs + " smudge %f";
+                clean_command = git_lfs + " clean %f";
 
             } else {
                 smudge_command = FormatGitSSHEnvPrefix (auth_info) + "git-lfs smudge %f";

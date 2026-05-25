@@ -933,9 +933,13 @@ namespace Sparkles.Git {
             string pre_push_hook_content;
 
             if (InstallationInfo.OperatingSystem == OS.macOS || InstallationInfo.OperatingSystem == OS.Windows) {
+                string ssh_prefix = InstallationInfo.OperatingSystem == OS.Windows
+                    ? GitCommand.FormatGitSSHShellScriptPrefix (auth_info)
+                    : GitCommand.FormatGitSSHEnvPrefix (auth_info);
+
                 pre_push_hook_content =
                     "#!/bin/sh" + Environment.NewLine +
-                    GitCommand.FormatGitSSHEnvPrefix (auth_info) +
+                    ssh_prefix +
                     Path.Combine (Configuration.DefaultConfiguration.BinPath, "git-lfs").Replace ("\\", "/")  + " pre-push \"$@\"";
 
             } else {

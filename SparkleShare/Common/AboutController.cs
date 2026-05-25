@@ -36,6 +36,9 @@ namespace SparkleShare {
         /// <summary>Status text; non-null download_url makes the line a download link.</summary>
         public event Action<string, string> UpdateStatusEvent = delegate { };
 
+        /// <summary>Full About-dialog version line (e.g. after an update check).</summary>
+        public event Action<string> VersionLabelEvent = delegate { };
+
         public readonly string WebsiteLinkAddress          = "https://www.sparkleshare.org/";
         public readonly string OriginalProjectLinkAddress  = "https://github.com/hbons/SparkleShare";
         public readonly string CreditsLinkAddress          = "https://github.com/hbons/SparkleShare/blob/master/.github/AUTHORS.md";
@@ -81,8 +84,18 @@ namespace SparkleShare {
         }
 
 
+        public string FormatAboutVersionLabel (string latest_available = null)
+        {
+            if (string.IsNullOrWhiteSpace (latest_available))
+                return "version " + RunningVersion;
+
+            return "version " + RunningVersion + " (" + latest_available.Trim () + " available)";
+        }
+
+
         void CheckForNewVersion ()
         {
+            VersionLabelEvent (FormatAboutVersionLabel ());
             UpdateStatusEvent ("Checking for updates…", null);
             Thread.Sleep (500);
 
@@ -106,10 +119,12 @@ namespace SparkleShare {
                     string display_version = NormalizeTag (tag_name);
 
                     if (IsNewerRelease (tag_name, RunningVersion)) {
+                        VersionLabelEvent (FormatAboutVersionLabel (display_version));
                         UpdateStatusEvent (
                             "Update available: " + display_version + UpdateDownloadSuffix,
                             html_url ?? ReleasesLinkAddress);
                     } else {
+                        VersionLabelEvent (FormatAboutVersionLabel ());
                         UpdateStatusEvent ("✓ You are running the latest version", null);
                     }
                 }

@@ -82,6 +82,13 @@ namespace SparkleShare {
                 });
             };
 
+            Controller.VersionLabelEvent += delegate (string label) {
+                SparkleShare.Controller.Invoke (() => {
+                    if (this.version_text_field != null)
+                        this.version_text_field.StringValue = label;
+                });
+            };
+
 
             ContentView.AddSubview (this.hidden_close_button);
         }
@@ -106,10 +113,9 @@ namespace SparkleShare {
 
         void RefreshVersionLabel ()
         {
-            Controller.RefreshRunningVersion ();
             string display = BundleDisplayVersion ();
             Controller.RunningVersion = display;
-            this.version_text_field.StringValue = "version " + display;
+            this.version_text_field.StringValue = Controller.FormatAboutVersionLabel ();
         }
 
 

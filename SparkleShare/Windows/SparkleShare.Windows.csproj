@@ -20,7 +20,8 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
-  <!-- Self-contained publish for the WiX MSI (no separate .NET 10 runtime required). -->
+  <!-- Self-contained publish for the WiX MSI (no separate .NET 10 runtime required).
+       LinkMode/PublishTrimmed are not set here; the Mac app uses LinkMode=None explicitly. -->
   <PropertyGroup Condition="'$(BuildInstaller)' == 'true'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>

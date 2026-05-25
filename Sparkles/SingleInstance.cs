@@ -76,19 +76,32 @@ namespace Sparkles {
         }
 
 
+        static string OwnExecutablePath ()
+        {
+            try {
+                using (var process = Process.GetCurrentProcess ())
+                    return process.MainModule?.FileName;
+            } catch {
+                return null;
+            }
+        }
+
+
         // Default implementation: atomic O_EXCL-style claim of <config>/sparkleshare.pid,
         // with a stale-file recovery step that verifies the recorded PID belongs to a
-        // process whose name actually contains "SparkleShare" (mitigates PID reuse).
+        // SparkleShare process and (when present) the same executable path (mitigates PID reuse).
         static bool PidFileCheckAndClaim ()
         {
             string path = PidFilePath;
             int own_pid = Environment.ProcessId;
+            string own_executable = OwnExecutablePath ();
 
             for (int attempt = 0; attempt < 3; attempt++) {
                 try {
                     using (var fs = new FileStream (path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                     using (var sw = new StreamWriter (fs)) {
-                        sw.Write (own_pid);
+                        sw.WriteLine (own_pid);
+                        sw.WriteLine (own_executable ?? "");
                     }
 
                     Logger.LogInfo ("SingleInstance", "Claimed PID file at " + path);
@@ -96,16 +109,17 @@ namespace Sparkles {
 
                 } catch (IOException) {
                     int existing_pid = -1;
+                    string existing_executable = null;
                     string existing_content = null;
 
                     try {
-                        existing_content = File.ReadAllText (path).Trim ();
-                        int.TryParse (existing_content, out existing_pid);
+                        existing_content = File.ReadAllText (path);
+                        TryParsePidFile (existing_content, out existing_pid, out existing_executable);
                     } catch {
                         // Corrupt file; treat as stale.
                     }
 
-                    if (existing_pid > 0 && IsSparkleShareProcessAlive (existing_pid)) {
+                    if (existing_pid > 0 && IsSparkleShareProcessAlive (existing_pid, existing_executable)) {
                         Logger.LogInfo ("SingleInstance",
                             "Another SparkleShare instance is running (PID " + existing_pid + ")");
                         return true;
@@ -128,11 +142,53 @@ namespace Sparkles {
         }
 
 
-        static bool IsSparkleShareProcessAlive (int pid)
+        internal static bool TryParsePidFile (string content, out int pid, out string executable_path)
+        {
+            pid = -1;
+            executable_path = null;
+
+            if (string.IsNullOrWhiteSpace (content))
+                return false;
+
+            string[] lines = content.Split (
+                new [] { '\r', '\n' },
+                StringSplitOptions.RemoveEmptyEntries);
+
+            if (lines.Length == 0 || !int.TryParse (lines [0].Trim (), out pid))
+                return false;
+
+            if (lines.Length > 1 && !string.IsNullOrWhiteSpace (lines [1]))
+                executable_path = lines [1].Trim ();
+
+            return pid > 0;
+        }
+
+
+        static bool IsSparkleShareProcessAlive (int pid, string expected_executable_path)
         {
             try {
                 using (var p = Process.GetProcessById (pid)) {
-                    return p.ProcessName.IndexOf ("SparkleShare", StringComparison.OrdinalIgnoreCase) >= 0;
+                    if (p.ProcessName.IndexOf ("SparkleShare", StringComparison.OrdinalIgnoreCase) < 0)
+                        return false;
+
+                    if (string.IsNullOrWhiteSpace (expected_executable_path))
+                        return true;
+
+                    try {
+                        string actual = p.MainModule?.FileName;
+
+                        if (string.IsNullOrWhiteSpace (actual))
+                            return true;
+
+                        return string.Equals (
+                            Path.GetFullPath (actual),
+                            Path.GetFullPath (expected_executable_path),
+                            StringComparison.OrdinalIgnoreCase);
+
+                    } catch {
+                        // MainModule may be unavailable; process name match is enough.
+                        return true;
+                    }
                 }
 
             } catch (ArgumentException) {
@@ -152,9 +208,25 @@ namespace Sparkles {
                 if (!File.Exists (path))
                     return;
 
-                string content = File.ReadAllText (path).Trim ();
-                if (int.TryParse (content, out int pid) && pid == Environment.ProcessId)
-                    File.Delete (path);
+                string content = File.ReadAllText (path);
+
+                if (!TryParsePidFile (content, out int pid, out string executable_path))
+                    return;
+
+                if (pid != Environment.ProcessId)
+                    return;
+
+                string own_executable = OwnExecutablePath ();
+
+                if (!string.IsNullOrWhiteSpace (executable_path)
+                    && !string.IsNullOrWhiteSpace (own_executable)
+                    && !string.Equals (
+                        Path.GetFullPath (executable_path),
+                        Path.GetFullPath (own_executable),
+                        StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                File.Delete (path);
 
             } catch (Exception e) {
                 Logger.LogInfo ("SingleInstance", "Failed to release PID file", e);

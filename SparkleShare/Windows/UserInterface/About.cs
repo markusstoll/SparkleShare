@@ -29,6 +29,7 @@ namespace SparkleShare {
         public AboutController Controller = new AboutController ();
 
         private SparkleStatusLink updates;
+        private Label version_label;
 
 
         public About ()
@@ -46,9 +47,17 @@ namespace SparkleShare {
 
             Controller.ShowWindowEvent += delegate {
                Dispatcher.BeginInvoke ((Action) delegate {
+                    Controller.RefreshRunningVersion ();
+                    RefreshVersionLabel ();
                     Show ();
                     Activate ();
                     BringIntoView ();
+                });
+            };
+
+            Controller.VersionLabelEvent += delegate (string label) {
+                Dispatcher.BeginInvoke ((Action) delegate {
+                    RefreshVersionLabel (label);
                 });
             };
 
@@ -76,7 +85,7 @@ namespace SparkleShare {
             image.Source = UserInterfaceHelpers.GetImageSource ("about");
 
 
-            Label version = new Label () {
+            this.version_label = new Label () {
                 Content    = "version " + Controller.RunningVersion,
                 FontSize   = 11,
                 Foreground = new SolidColorBrush (Colors.White)
@@ -105,9 +114,9 @@ namespace SparkleShare {
             Canvas.SetLeft (image, 0);
             Canvas.SetTop (image, 0);
 
-            canvas.Children.Add (version);
-            Canvas.SetLeft (version, 289);
-            Canvas.SetTop (version, 92);
+            canvas.Children.Add (this.version_label);
+            Canvas.SetLeft (this.version_label, 289);
+            Canvas.SetTop (this.version_label, 92);
 
             canvas.Children.Add (this.updates);
             Canvas.SetLeft (this.updates, 289);
@@ -135,6 +144,15 @@ namespace SparkleShare {
             Canvas.SetTop (debug_log_link, 248);
 
             Content = canvas;
+        }
+
+
+        void RefreshVersionLabel (string label = null)
+        {
+            if (this.version_label == null)
+                return;
+
+            this.version_label.Content = label ?? Controller.FormatAboutVersionLabel ();
         }
 
 

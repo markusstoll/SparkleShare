@@ -247,6 +247,7 @@ namespace Sparkles {
         }
 
 
+        // Cooperative shutdown: Stop() ends the git child and clears IsActive; the worker thread exits on its own.
         public void Dispose ()
         {
             IsActive = false;

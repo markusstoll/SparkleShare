@@ -139,6 +139,8 @@ namespace Sparkles.Git {
 
         public override void Stop ()
         {
+            IsActive = false;
+
             try {
                 if (git_clone != null && !git_clone.HasExited) {
                     git_clone.Kill ();
