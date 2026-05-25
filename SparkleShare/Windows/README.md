@@ -7,6 +7,7 @@ SparkleShare on Windows is a **.NET 10** WinForms/WPF app with a **WiX v4** MSI 
 | Requirement | Notes |
 |-------------|--------|
 | **Windows 10/11** | Required to run the app, bundle Git, and build the MSI |
+| **[WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)** | Event log UI (Evergreen runtime; usually preinstalled on Windows 11) |
 | **[.NET SDK 10](https://dotnet.microsoft.com/download)** or newer | `dotnet --version` should report 10.x |
 | **Network** (first build) | `postBuild.cmd` downloads Portable Git from the URL in `git.download` |
 

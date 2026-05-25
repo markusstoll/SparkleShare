@@ -11,8 +11,15 @@
               $('.day-entry-content .event-entry:last-child').css('border', 'none');
             
               $('a').not('.show').click(function (event) {
-                  window.external.LinkClicked($(this).attr("href"));
-                  event.preventDefault();
+                  var href = $(this).attr("href");
+                  if (window.chrome && window.chrome.webview) {
+                      window.chrome.webview.postMessage(href);
+                      event.preventDefault();
+                  } else if (window.external && window.external.LinkClicked) {
+                      window.external.LinkClicked(href);
+                      event.preventDefault();
+                  }
+                  // else: allow navigation (macOS WKWebView / Linux WebKit policy)
               });
 
               // Update the Today and Yesterday labels after midnight

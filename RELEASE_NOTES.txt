@@ -1,7 +1,8 @@
 4.0.3 (2026):
 
     Windows (.NET 10):
-    - Fix Event Log IE “content blocked” warning (Mark of the Web, file:// load)
+    - Event log uses WebView2 (Chromium) instead of embedded Internet Explorer
+    - Requires Microsoft WebView2 Runtime (Evergreen; typically already on Windows 11)
     - WiX MSI with bundled Portable Git; review fixes (LFS smudge, PID file, About version label)
 
     All platforms (Sparkles):
