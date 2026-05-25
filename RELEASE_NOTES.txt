@@ -1,3 +1,14 @@
+4.0.3 (2026):
+
+    Windows (.NET 10):
+    - Fix Event Log IE “content blocked” warning (Mark of the Web, file:// load)
+    - WiX MSI with bundled Portable Git; review fixes (LFS smudge, PID file, About version label)
+
+    All platforms (Sparkles):
+    - Git LFS smudge on Windows without Unix env; stronger single-instance PID check
+    - About: refresh version line when a newer release is available
+
+
 4.0.2 (2026):
 
     Bug-fix and polish release for the macOS 4.x line (builds on 4.0.1-beta).
