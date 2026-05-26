@@ -165,19 +165,31 @@ namespace SparkleShare {
 
         public override void OpenFile (string path)
         {
-            Process.Start (path);
+            Process.Start (new ProcessStartInfo (path) {
+                UseShellExecute = true
+            });
         }
 
 
         public override void OpenFolder (string path)
         {
-            Process.Start (path);
+            if (string.IsNullOrWhiteSpace (path) || !Directory.Exists (path)) {
+                Logger.LogInfo ("Controller", "OpenFolder: path does not exist: " + path);
+                return;
+            }
+
+            // .NET requires UseShellExecute to open a directory in Explorer (not run it as an exe).
+            Process.Start (new ProcessStartInfo (path) {
+                UseShellExecute = true
+            });
         }
 
 
         public override void OpenWebsite (string url)
         {
-            Process.Start (new ProcessStartInfo (url));
+            Process.Start (new ProcessStartInfo (url) {
+                UseShellExecute = true
+            });
         }
 
 
