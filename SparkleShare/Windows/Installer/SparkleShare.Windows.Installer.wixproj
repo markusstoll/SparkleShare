@@ -30,6 +30,7 @@
     <Content Include="LaunchAppOnExit.wxi" />
     <Content Include="Predefines.wxi" />
     <Content Include="productVersion.wxi" />
+    <Content Include="WebView2Runtime.wxi" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />

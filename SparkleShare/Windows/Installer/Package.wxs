@@ -81,6 +81,8 @@
         -->
 
         <?include LaunchAppOnExit.wxi ?>
+
+        <?include WebView2Runtime.wxi ?>
         
         <!--################################################################-->        
 

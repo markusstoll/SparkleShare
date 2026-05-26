@@ -7,7 +7,7 @@ SparkleShare on Windows is a **.NET 10** WinForms/WPF app with a **WiX v4** MSI 
 | Requirement | Notes |
 |-------------|--------|
 | **Windows 10/11** | Required to run the app, bundle Git, and build the MSI |
-| **[WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)** | Event log UI (Evergreen runtime; usually preinstalled on Windows 11) |
+| **[WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)** | Event log UI; **the MSI installs it automatically** when missing (Windows 10 often needs this; Windows 11 usually already has it) |
 | **[.NET SDK 10](https://dotnet.microsoft.com/download)** or newer | `dotnet --version` should report 10.x |
 | **Network** (first build) | `postBuild.cmd` downloads Portable Git from the URL in `git.download` |
 
@@ -77,6 +77,8 @@ Requires a **Release** publish output at `SparkleShare\Windows\bin\Release\publi
 ```bat
 scripts\build-windows.cmd installer
 ```
+
+This downloads `Installer\redist\MicrosoftEdgeWebview2Setup.exe` (Evergreen bootstrapper, ~2 MB) if missing, then builds the MSI. During setup, the installer runs `/silent /install` for WebView2 when the runtime is not already registered (common on Windows 10).
 
 Or:
 

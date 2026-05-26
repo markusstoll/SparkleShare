@@ -4,6 +4,8 @@ set DOTNET_CLI_TELEMETRY_OPTOUT=1
 cd /d "%~dp0.."
 
 if not "%1"=="installer" goto :build_only
+call "%~dp0download-webview2-bootstrapper.cmd"
+if errorlevel 1 exit /b 1
 echo Publishing SparkleShare Windows self-contained x64...
 dotnet publish SparkleShare\Windows\SparkleShare.Windows.csproj -c Release -p:BuildInstaller=true
 if errorlevel 1 exit /b 1

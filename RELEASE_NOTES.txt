@@ -2,7 +2,7 @@
 
     Windows (.NET 10):
     - Event log uses WebView2 (Chromium) instead of embedded Internet Explorer
-    - Requires Microsoft WebView2 Runtime (Evergreen; typically already on Windows 11)
+    - MSI runs the Evergreen WebView2 bootstrapper when the runtime is not installed
     - WiX MSI with bundled Portable Git; review fixes (LFS smudge, PID file, About version label)
 
     All platforms (Sparkles):

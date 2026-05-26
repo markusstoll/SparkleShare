@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Installs the Evergreen WebView2 Runtime when missing (required for the event log).
+  redist\MicrosoftEdgeWebview2Setup.exe is downloaded by scripts/download-webview2-bootstrapper.cmd
+  before the WiX build (see scripts/build-windows.cmd).
+-->
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <!-- Edge Update client registration for the WebView2 Runtime (Evergreen). -->
+    <Property Id="WVRTINSTALLED" Secure="yes">
+        <RegistrySearch Id="WebView2RegistrySearchNative"
+            Root="HKLM"
+            Key="SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+            Name="pv"
+            Type="raw" />
+        <RegistrySearch Id="WebView2RegistrySearchWow64"
+            Root="HKLM"
+            Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+            Name="pv"
+            Type="raw" />
+    </Property>
+
+    <Binary Id="WebView2Bootstrapper"
+        SourceFile="redist\MicrosoftEdgeWebview2Setup.exe" />
+
+    <CustomAction Id="InstallWebView2Runtime"
+        BinaryRef="WebView2Bootstrapper"
+        ExeCommand="/silent /install"
+        Execute="commit"
+        Return="check"
+        Impersonate="no" />
+
+    <InstallExecuteSequence>
+        <Custom Action="InstallWebView2Runtime"
+            Before="InstallFinalize"
+            Condition="NOT REMOVE AND NOT WVRTINSTALLED" />
+    </InstallExecuteSequence>
+
+</Include>
